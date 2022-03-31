@@ -1,14 +1,18 @@
-# Project
+# Kiota Json Serialization Library for dotnet
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+![Go Serialization Text](https://github.com/microsoft/kiota-serialization-json-go/actions/workflows/go.yml/badge.svg)
 
-As the maintainer of this project, please make a few updates:
+The Json Serialization Library for Go is the Go JSON serialization library implementation.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+A [Kiota](https://github.com/microsoft/kiota) generated project will need a reference to a json serialization package to handle json payloads from an API endpoint.
+
+Read more about Kiota [here](https://github.com/microsoft/kiota/blob/main/README.md).
+
+## Using the Kiota Json Serialization Library
+
+```Shell
+    go get github.com/microsoft/kiota-serialization-json-go
+```
 
 ## Contributing
 
