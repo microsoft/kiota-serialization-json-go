@@ -1,4 +1,4 @@
-# Kiota Json Serialization Library for dotnet
+# Kiota Json Serialization Library for Go
 
 ![Go Serialization Text](https://github.com/microsoft/kiota-serialization-json-go/actions/workflows/go.yml/badge.svg)
 
