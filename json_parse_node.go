@@ -191,7 +191,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 					itemAdditionalData[key] = value.value
 				}
 			} else {
-				err := field(result, value)
+				err := field(value)
 				if err != nil {
 					return nil, err
 				}
