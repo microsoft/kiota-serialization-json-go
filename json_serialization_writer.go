@@ -163,7 +163,7 @@ func (w *JsonSerializationWriter) WriteTimeValue(key string, value *time.Time) e
 		w.writePropertyName(key)
 	}
 	if value != nil {
-		w.writeRawValue((*value).String())
+		w.writeStringValue((*value).Format(time.RFC3339))
 	}
 	if key != "" && value != nil {
 		w.writePropertySeparator()
@@ -177,7 +177,7 @@ func (w *JsonSerializationWriter) WriteISODurationValue(key string, value *absse
 		w.writePropertyName(key)
 	}
 	if value != nil {
-		w.writeRawValue((*value).String())
+		w.writeStringValue((*value).String())
 	}
 	if key != "" && value != nil {
 		w.writePropertySeparator()
@@ -191,7 +191,7 @@ func (w *JsonSerializationWriter) WriteTimeOnlyValue(key string, value *absser.T
 		w.writePropertyName(key)
 	}
 	if value != nil {
-		w.writeRawValue((*value).String())
+		w.writeStringValue((*value).String())
 	}
 	if key != "" && value != nil {
 		w.writePropertySeparator()
@@ -205,7 +205,7 @@ func (w *JsonSerializationWriter) WriteDateOnlyValue(key string, value *absser.D
 		w.writePropertyName(key)
 	}
 	if value != nil {
-		w.writeRawValue((*value).String())
+		w.writeStringValue((*value).String())
 	}
 	if key != "" && value != nil {
 		w.writePropertySeparator()
