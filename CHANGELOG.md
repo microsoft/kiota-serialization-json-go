@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.2.1] - 2022-04-14
+
+### Changed
+
+- Fixed a bug where dates, date only, time only and duration would not serialize properly.
+
 ## [0.2.0] - 2022-04-04
 
 ### Changed
