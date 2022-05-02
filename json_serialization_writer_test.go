@@ -77,3 +77,50 @@ func TestWriteDateOnlyValue(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
 }
+
+
+func TestWriteBoolValue(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := true
+	serializer.WriteBoolValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprintf("\"key\":%t,", value), string(result[:]))
+}
+
+func TestWriteInt8Value(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := int8(125)
+	serializer.WriteInt8Value("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprintf("\"key\":%d,", value), string(result[:]))
+}
+
+func TestWriteByteValue(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	var value byte = 97
+	serializer.WriteByteValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprintf("\"key\":%d,", value), string(result[:]))
+}
+//  ByteArray values are encoded to Base64 when stored
+func TestWriteByteArrayValue(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := []byte("SerialWriter")
+	serializer.WriteByteArrayValue("key", value)
+	expected := "U2VyaWFsV3JpdGVy"
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprintf("\"key\":\"%s\",", expected), string(result[:]))
+}
+
+func TestDoubleEscapeFailure( t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "W/\"CQAAABYAAAAs+XSiyjZdS4Rhtwk0v1pGAAC5bsJ2\""
+	serializer.WriteStringValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
+}
