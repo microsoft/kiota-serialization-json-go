@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.3.1] - 2022-05-03
+
+### Changed
+
+- Fixed an issue where quotes in string values would not be escaped. #11
+- Fixed an issue where int64 and byte values would get a double key. #12, #13
+
 ## [0.3.0] - 2022-04-19
 
 ### Changed

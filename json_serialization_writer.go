@@ -26,6 +26,7 @@ func (w *JsonSerializationWriter) writeRawValue(value string) {
 	w.writer = append(w.writer, value)
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
+        value = strings.ReplaceAll(value, "\"", "\\\"")
 	w.writeRawValue("\"" + value + "\"")
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {
@@ -83,30 +84,18 @@ func (w *JsonSerializationWriter) WriteBoolValue(key string, value *bool) error 
 
 // WriteByteValue writes a Byte value to underlying the byte array.
 func (w *JsonSerializationWriter) WriteByteValue(key string, value *byte) error {
-	if key != "" && value != nil {
-		w.writePropertyName(key)
-	}
 	if value != nil {
 		cast := int64(*value)
 		return w.WriteInt64Value(key, &cast)
-	}
-	if key != "" && value != nil {
-		w.writePropertySeparator()
 	}
 	return nil
 }
 
 // WriteInt8Value writes a int8 value to underlying the byte array.
 func (w *JsonSerializationWriter) WriteInt8Value(key string, value *int8) error {
-	if key != "" && value != nil {
-		w.writePropertyName(key)
-	}
 	if value != nil {
 		cast := int64(*value)
 		return w.WriteInt64Value(key, &cast)
-	}
-	if key != "" && value != nil {
-		w.writePropertySeparator()
 	}
 	return nil
 }
