@@ -124,3 +124,21 @@ func TestDoubleEscapeFailure( t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
 }
+
+func TestBufferClose( t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "W/\"CQAAABYAAAAs+XSiyjZdS4Rhtwk0v1pGAAC5bsJ2\""
+	serializer.WriteStringValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+        assert.Nil(t, err)
+        assert.True(t, len(result) > 0)
+        serializer.Close()
+	empty, err := serializer.GetSerializedContent()
+        assert.Nil(t, err)
+        assert.True(t, len(empty) == 0)
+	dateOnly := absser.NewDateOnly(referenceTime())
+	serializer.WriteDateOnlyValue("today", dateOnly)
+	notEmpty, err := serializer.GetSerializedContent()
+        assert.Nil(t, err)
+        assert.True(t, len(notEmpty) > 0)
+}
