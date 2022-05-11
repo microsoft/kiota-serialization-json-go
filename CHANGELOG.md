@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.3.2] - 2022-05-11
+
+### Changed
+
+- Serialization writer close method now clears the internal array and can be used to reset the writer.
+
 ## [0.3.1] - 2022-05-03
 
 ### Changed
