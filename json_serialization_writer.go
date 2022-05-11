@@ -26,7 +26,7 @@ func (w *JsonSerializationWriter) writeRawValue(value string) {
 	w.writer = append(w.writer, value)
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
-        value = strings.ReplaceAll(value, "\"", "\\\"")
+	value = strings.ReplaceAll(value, "\"", "\\\"")
 	w.writeRawValue("\"" + value + "\"")
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {
@@ -825,5 +825,6 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 
 // Close clears the internal buffer.
 func (w *JsonSerializationWriter) Close() error {
+	w.writer = make([]string, 0)
 	return nil
 }
