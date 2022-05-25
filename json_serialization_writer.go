@@ -36,10 +36,19 @@ func (w *JsonSerializationWriter) writePropertySeparator() {
 	w.writeRawValue(",")
 }
 func (w *JsonSerializationWriter) trimLastPropertySeparator() {
-	writerLen := len(w.writer)
-	if writerLen > 0 && w.writer[writerLen-1] == "," {
-		w.writer = w.writer[:writerLen-1]
+	for idx, s := range w.writer {
+		writerLen := len(w.writer)
+		if s == "," && idx+1 < writerLen {
+			if w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == "," {
+				w.removeTrailingComma(idx)
+			}
+		} else if s == "," && idx+1 == writerLen {
+			w.removeTrailingComma(idx)
+		}
 	}
+}
+func (w *JsonSerializationWriter) removeTrailingComma(index int) {
+	w.writer = append(w.writer[:index], w.writer[index+1:]...)
 }
 func (w *JsonSerializationWriter) writeArrayStart() {
 	w.writeRawValue("[")
@@ -244,7 +253,7 @@ func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsa
 		if err != nil {
 			return err
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeObjectEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -267,7 +276,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfObjectValues(key string, coll
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -290,7 +299,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfStringValues(key string, coll
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -313,7 +322,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt32Values(key string, colle
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -336,7 +345,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt64Values(key string, colle
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -359,7 +368,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfFloat32Values(key string, col
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -382,7 +391,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfFloat64Values(key string, col
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -405,7 +414,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfTimeValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -428,7 +437,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfISODurationValues(key string,
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -451,7 +460,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfTimeOnlyValues(key string, co
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -474,7 +483,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfDateOnlyValues(key string, co
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -497,7 +506,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfUUIDValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -520,7 +529,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfBoolValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -543,7 +552,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfByteValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -566,7 +575,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -577,6 +586,8 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 
 // GetSerializedContent returns the resulting byte array from the serialization writer.
 func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
+	// removing all trailing commas only once
+	w.trimLastPropertySeparator()
 	resultStr := strings.Join(w.writer, "")
 	return []byte(resultStr), nil
 }
@@ -705,9 +716,17 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				}
 				continue
 			}
-			sv, ok := value.(*string)
+			psv, ok := value.(*string)
 			if ok {
-				err := w.WriteStringValue(key, sv)
+				err := w.WriteStringValue(key, psv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			sv, ok := value.(string)
+			if ok {
+				err := w.WriteStringValue(key, &sv)
 				if err != nil {
 					return err
 				}
@@ -818,7 +837,7 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				continue
 			}
 		}
-		w.trimLastPropertySeparator()
+
 	}
 	return nil
 }
