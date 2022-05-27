@@ -2,6 +2,9 @@ package jsonserialization
 
 import (
 	testing "testing"
+
+	absser "github.com/microsoft/kiota-abstractions-go/serialization"
+	assert "github.com/stretchr/testify/assert"
 )
 
 func TestTree(t *testing.T) {
@@ -51,6 +54,11 @@ func TestTree(t *testing.T) {
 	if !*boolValue {
 		t.Errorf("Expected value to be true, got false")
 	}
+}
+
+func TestJsonParseNodeHonoursInterface(t *testing.T) {
+	instance := &JsonParseNode{}
+	assert.Implements(t, (*absser.ParseNode)(nil), instance)
 }
 
 func TestFunctional(t *testing.T) {
