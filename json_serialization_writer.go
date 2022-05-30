@@ -2,6 +2,7 @@ package jsonserialization
 
 import (
 	"encoding/base64"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -38,17 +39,18 @@ func (w *JsonSerializationWriter) writePropertySeparator() {
 func (w *JsonSerializationWriter) trimLastPropertySeparator() {
 	for idx, s := range w.writer {
 		writerLen := len(w.writer)
-		if s == "," && idx+1 < writerLen {
-			if w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == "," {
-				w.removeTrailingComma(idx)
+		if s == "," {
+			if idx <= writerLen-1 {
+				if idx == writerLen-1 {
+					w.writer[idx] = ""
+					continue
+				}
+				if w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == "," {
+					w.writer[idx] = ""
+				}
 			}
-		} else if s == "," && idx+1 == writerLen {
-			w.removeTrailingComma(idx)
 		}
 	}
-}
-func (w *JsonSerializationWriter) removeTrailingComma(index int) {
-	w.writer = append(w.writer[:index], w.writer[index+1:]...)
 }
 func (w *JsonSerializationWriter) writeArrayStart() {
 	w.writeRawValue("[")
@@ -586,7 +588,6 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 
 // GetSerializedContent returns the resulting byte array from the serialization writer.
 func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
-	// removing all trailing commas only once
 	w.trimLastPropertySeparator()
 	resultStr := strings.Join(w.writer, "")
 	return []byte(resultStr), nil
@@ -732,97 +733,193 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				}
 				continue
 			}
-			bv, ok := value.(*bool)
+			pbv, ok := value.(*bool)
 			if ok {
-				err := w.WriteBoolValue(key, bv)
+				err := w.WriteBoolValue(key, pbv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			byv, ok := value.(*byte)
+			bv, ok := value.(bool)
 			if ok {
-				err := w.WriteByteValue(key, byv)
+				err := w.WriteBoolValue(key, &bv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i8v, ok := value.(*int8)
+			pbyv, ok := value.(*byte)
 			if ok {
-				err := w.WriteInt8Value(key, i8v)
+				err := w.WriteByteValue(key, pbyv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i32v, ok := value.(*int32)
+			byv, ok := value.(byte)
 			if ok {
-				err := w.WriteInt32Value(key, i32v)
+				err := w.WriteByteValue(key, &byv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i64v, ok := value.(*int64)
+			pi8v, ok := value.(*int8)
 			if ok {
-				err := w.WriteInt64Value(key, i64v)
+				err := w.WriteInt8Value(key, pi8v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			f32v, ok := value.(*float32)
+			i8v, ok := value.(int8)
 			if ok {
-				err := w.WriteFloat32Value(key, f32v)
+				err := w.WriteInt8Value(key, &i8v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			f64v, ok := value.(*float64)
+			pi32v, ok := value.(*int32)
 			if ok {
-				err := w.WriteFloat64Value(key, f64v)
+				err := w.WriteInt32Value(key, pi32v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			uv, ok := value.(*uuid.UUID)
+			i32v, ok := value.(int32)
 			if ok {
-				err := w.WriteUUIDValue(key, uv)
+				err := w.WriteInt32Value(key, &i32v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			tv, ok := value.(*time.Time)
+			pi64v, ok := value.(*int64)
 			if ok {
-				err := w.WriteTimeValue(key, tv)
+				err := w.WriteInt64Value(key, pi64v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			dv, ok := value.(*absser.ISODuration)
+			i64v, ok := value.(int64)
 			if ok {
-				err := w.WriteISODurationValue(key, dv)
+				err := w.WriteInt64Value(key, &i64v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			tov, ok := value.(*absser.TimeOnly)
+			pf32v, ok := value.(*float32)
 			if ok {
-				err := w.WriteTimeOnlyValue(key, tov)
+				err := w.WriteFloat32Value(key, pf32v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			dov, ok := value.(*absser.DateOnly)
+			f32v, ok := value.(float32)
 			if ok {
-				err := w.WriteDateOnlyValue(key, dov)
+				err := w.WriteFloat32Value(key, &f32v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pf64v, ok := value.(*float64)
+			if ok {
+				err := w.WriteFloat64Value(key, pf64v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			f64v, ok := value.(float64)
+			if ok {
+				err := w.WriteFloat64Value(key, &f64v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			puv, ok := value.(*uuid.UUID)
+			if ok {
+				err := w.WriteUUIDValue(key, puv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			uv, ok := value.(uuid.UUID)
+			if ok {
+				err := w.WriteUUIDValue(key, &uv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			ptv, ok := value.(*time.Time)
+			if ok {
+				err := w.WriteTimeValue(key, ptv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			tv, ok := value.(time.Time)
+			if ok {
+				err := w.WriteTimeValue(key, &tv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pdv, ok := value.(*absser.ISODuration)
+			if ok {
+				err := w.WriteISODurationValue(key, pdv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			dv, ok := value.(absser.ISODuration)
+			if ok {
+				err := w.WriteISODurationValue(key, &dv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			ptov, ok := value.(*absser.TimeOnly)
+			if ok {
+				err := w.WriteTimeOnlyValue(key, ptov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			tov, ok := value.(absser.TimeOnly)
+			if ok {
+				err := w.WriteTimeOnlyValue(key, &tov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pdov, ok := value.(*absser.DateOnly)
+			if ok {
+				err := w.WriteDateOnlyValue(key, pdov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			dov, ok := value.(absser.DateOnly)
+			if ok {
+				err := w.WriteDateOnlyValue(key, &dov)
 				if err != nil {
 					return err
 				}
@@ -836,8 +933,8 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				}
 				continue
 			}
+			return fmt.Errorf("unsupported AdditionalData type: %T", value)
 		}
-
 	}
 	return nil
 }

@@ -40,7 +40,7 @@ func TestItDoesntTrimCommasOnEmptyAdditionalData(t *testing.T) {
 	serializer.WriteStringValue("key2", &value2)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, "\"key\":\"value\",\"key2\":\"value2\",", string(result[:]))
+	assert.Equal(t, "\"key\":\"value\",\"key2\":\"value2\"", string(result[:]))
 }
 
 func TestWriteTimeValue(t *testing.T) {
@@ -49,7 +49,7 @@ func TestWriteTimeValue(t *testing.T) {
 	serializer.WriteTimeValue("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value.Format(time.RFC3339)), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%q", value.Format(time.RFC3339)), string(result[:]))
 }
 
 func TestWriteISODurationValue(t *testing.T) {
@@ -58,7 +58,7 @@ func TestWriteISODurationValue(t *testing.T) {
 	serializer.WriteISODurationValue("key", value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%q", value), string(result[:]))
 }
 
 func TestWriteTimeOnlyValue(t *testing.T) {
@@ -67,7 +67,7 @@ func TestWriteTimeOnlyValue(t *testing.T) {
 	serializer.WriteTimeOnlyValue("key", value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%q", value), string(result[:]))
 }
 
 func TestWriteDateOnlyValue(t *testing.T) {
@@ -76,7 +76,7 @@ func TestWriteDateOnlyValue(t *testing.T) {
 	serializer.WriteDateOnlyValue("key", value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%q", value), string(result[:]))
 }
 
 func TestWriteBoolValue(t *testing.T) {
@@ -85,7 +85,7 @@ func TestWriteBoolValue(t *testing.T) {
 	serializer.WriteBoolValue("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%t,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%t", value), string(result[:]))
 }
 
 func TestWriteInt8Value(t *testing.T) {
@@ -94,7 +94,7 @@ func TestWriteInt8Value(t *testing.T) {
 	serializer.WriteInt8Value("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%d,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%d", value), string(result[:]))
 }
 
 func TestWriteByteValue(t *testing.T) {
@@ -103,7 +103,7 @@ func TestWriteByteValue(t *testing.T) {
 	serializer.WriteByteValue("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%d,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%d", value), string(result[:]))
 }
 
 //  ByteArray values are encoded to Base64 when stored
@@ -114,7 +114,7 @@ func TestWriteByteArrayValue(t *testing.T) {
 	expected := "U2VyaWFsV3JpdGVy"
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":\"%s\",", expected), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":\"%s\"", expected), string(result[:]))
 }
 
 func TestDoubleEscapeFailure(t *testing.T) {
@@ -123,7 +123,7 @@ func TestDoubleEscapeFailure(t *testing.T) {
 	serializer.WriteStringValue("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
+	assert.Equal(t, fmt.Sprintf("\"key\":%q", value), string(result[:]))
 }
 
 func TestBufferClose(t *testing.T) {
@@ -148,4 +148,39 @@ func TestBufferClose(t *testing.T) {
 func TestJsonSerializationWriterHonoursInterface(t *testing.T) {
 	instance := NewJsonSerializationWriter()
 	assert.Implements(t, (*absser.SerializationWriter)(nil), instance)
+}
+
+func TestWriteMultipleTypes(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "value"
+	serializer.WriteStringValue("key", &value)
+	pointer := "pointer"
+	adlData := map[string]interface{}{
+		"add1": "string",
+		"add2": &pointer,
+		"add3": []string{"foo", "bar"},
+	}
+	serializer.WriteAdditionalData(adlData)
+	value2 := "value2"
+	serializer.WriteStringValue("key2", &value2)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Contains(t, string(result[:]), "\"key\":\"value\",")
+	assert.Contains(t, string(result[:]), "\"add1\":\"string\",")
+	assert.Contains(t, string(result[:]), "\"add2\":\"pointer\",")
+	assert.Contains(t, string(result[:]), "\"add3\":[\"foo\",\"bar\"],")
+	assert.Contains(t, string(result[:]), "\"key2\":\"value2\"")
+	assert.Equal(t, len("\"key\":\"value\",\"add1\":\"string\",\"add2\":\"pointer\",\"add3\":[\"foo\",\"bar\"],\"key2\":\"value2\""), len(string(result[:])))
+}
+
+func TestWriteInvalidAdditionalData(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	type Invalid string
+	var value Invalid = "value"
+	adlData := map[string]interface{}{
+		"key": value,
+	}
+	err := serializer.WriteAdditionalData(adlData)
+	expErr := fmt.Sprintf("unsupported AdditionalData type: %T", value)
+	assert.EqualErrorf(t, err, expErr, "Error should be: %v, got: %v", expErr, err)
 }

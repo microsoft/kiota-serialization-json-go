@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+ - Updated supported types for Additional Data, unsupported types now throwing an error instead of ignoring.
+ - Changed logic that trims excessive commas to be called only once on serialization.
+
 ## [0.5.0] - 2022-05-26
 
 ### Changed
