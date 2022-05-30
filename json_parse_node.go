@@ -283,7 +283,7 @@ func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error
 }
 
 // GetCollectionOfEnumValues returns the collection of Enum values from the node.
-func (n *JsonParseNode) GetCollectionOfEnumValues(parser func(string) (interface{}, error)) ([]interface{}, error) {
+func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]interface{}, error) {
 	if n == nil || n.value == nil {
 		return nil, nil
 	}
@@ -447,7 +447,7 @@ func (n *JsonParseNode) GetUUIDValue() (*uuid.UUID, error) {
 }
 
 // GetEnumValue returns a Enum value from the nodes.
-func (n *JsonParseNode) GetEnumValue(parser func(string) (interface{}, error)) (interface{}, error) {
+func (n *JsonParseNode) GetEnumValue(parser absser.EnumFactory) (interface{}, error) {
 	if parser == nil {
 		return nil, errors.New("parser is nil")
 	}

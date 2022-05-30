@@ -2,9 +2,10 @@ package jsonserialization
 
 import (
 	"fmt"
-	assert "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	assert "github.com/stretchr/testify/assert"
 
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
@@ -78,7 +79,6 @@ func TestWriteDateOnlyValue(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
 }
 
-
 func TestWriteBoolValue(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := true
@@ -105,6 +105,7 @@ func TestWriteByteValue(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("\"key\":%d,", value), string(result[:]))
 }
+
 //  ByteArray values are encoded to Base64 when stored
 func TestWriteByteArrayValue(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
@@ -116,7 +117,7 @@ func TestWriteByteArrayValue(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":\"%s\",", expected), string(result[:]))
 }
 
-func TestDoubleEscapeFailure( t *testing.T) {
+func TestDoubleEscapeFailure(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := "W/\"CQAAABYAAAAs+XSiyjZdS4Rhtwk0v1pGAAC5bsJ2\""
 	serializer.WriteStringValue("key", &value)
@@ -125,21 +126,26 @@ func TestDoubleEscapeFailure( t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":%q,", value), string(result[:]))
 }
 
-func TestBufferClose( t *testing.T) {
+func TestBufferClose(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := "W/\"CQAAABYAAAAs+XSiyjZdS4Rhtwk0v1pGAAC5bsJ2\""
 	serializer.WriteStringValue("key", &value)
 	result, err := serializer.GetSerializedContent()
-    assert.Nil(t, err)
-    assert.True(t, len(result) > 0)
-    serializer.Close()
-    assert.True(t, len(result) > 0)
+	assert.Nil(t, err)
+	assert.True(t, len(result) > 0)
+	serializer.Close()
+	assert.True(t, len(result) > 0)
 	empty, err := serializer.GetSerializedContent()
-    assert.Nil(t, err)
-    assert.True(t, len(empty) == 0)
+	assert.Nil(t, err)
+	assert.True(t, len(empty) == 0)
 	dateOnly := absser.NewDateOnly(referenceTime())
 	serializer.WriteDateOnlyValue("today", dateOnly)
 	notEmpty, err := serializer.GetSerializedContent()
-    assert.Nil(t, err)
-    assert.True(t, len(notEmpty) > 0)
+	assert.Nil(t, err)
+	assert.True(t, len(notEmpty) > 0)
+}
+
+func TestJsonSerializationWriterHonoursInterface(t *testing.T) {
+	instance := NewJsonSerializationWriter()
+	assert.Implements(t, (*absser.SerializationWriter)(nil), instance)
 }
