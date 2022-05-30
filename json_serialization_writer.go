@@ -2,6 +2,7 @@ package jsonserialization
 
 import (
 	"encoding/base64"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -36,9 +37,11 @@ func (w *JsonSerializationWriter) writePropertySeparator() {
 	w.writeRawValue(",")
 }
 func (w *JsonSerializationWriter) trimLastPropertySeparator() {
-	writerLen := len(w.writer)
-	if writerLen > 0 && w.writer[writerLen-1] == "," {
-		w.writer = w.writer[:writerLen-1]
+	for idx, s := range w.writer {
+		writerLen := len(w.writer)
+		if s == "," && (idx == writerLen-1 || (idx < writerLen-1 && (w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == ","))) {
+			w.writer[idx] = ""
+		}
 	}
 }
 func (w *JsonSerializationWriter) writeArrayStart() {
@@ -244,7 +247,7 @@ func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsa
 		if err != nil {
 			return err
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeObjectEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -267,7 +270,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfObjectValues(key string, coll
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -290,7 +293,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfStringValues(key string, coll
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -313,7 +316,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt32Values(key string, colle
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -336,7 +339,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt64Values(key string, colle
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -359,7 +362,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfFloat32Values(key string, col
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -382,7 +385,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfFloat64Values(key string, col
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -405,7 +408,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfTimeValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -428,7 +431,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfISODurationValues(key string,
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -451,7 +454,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfTimeOnlyValues(key string, co
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -474,7 +477,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfDateOnlyValues(key string, co
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -497,7 +500,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfUUIDValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -520,7 +523,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfBoolValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -543,7 +546,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfByteValues(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -566,7 +569,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 			}
 			w.writePropertySeparator()
 		}
-		w.trimLastPropertySeparator()
+
 		w.writeArrayEnd()
 		if key != "" {
 			w.writePropertySeparator()
@@ -577,6 +580,7 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 
 // GetSerializedContent returns the resulting byte array from the serialization writer.
 func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
+	w.trimLastPropertySeparator()
 	resultStr := strings.Join(w.writer, "")
 	return []byte(resultStr), nil
 }
@@ -705,105 +709,209 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				}
 				continue
 			}
-			sv, ok := value.(*string)
+			psv, ok := value.(*string)
 			if ok {
-				err := w.WriteStringValue(key, sv)
+				err := w.WriteStringValue(key, psv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			bv, ok := value.(*bool)
+			sv, ok := value.(string)
 			if ok {
-				err := w.WriteBoolValue(key, bv)
+				err := w.WriteStringValue(key, &sv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			byv, ok := value.(*byte)
+			pbv, ok := value.(*bool)
 			if ok {
-				err := w.WriteByteValue(key, byv)
+				err := w.WriteBoolValue(key, pbv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i8v, ok := value.(*int8)
+			bv, ok := value.(bool)
 			if ok {
-				err := w.WriteInt8Value(key, i8v)
+				err := w.WriteBoolValue(key, &bv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i32v, ok := value.(*int32)
+			pbyv, ok := value.(*byte)
 			if ok {
-				err := w.WriteInt32Value(key, i32v)
+				err := w.WriteByteValue(key, pbyv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			i64v, ok := value.(*int64)
+			byv, ok := value.(byte)
 			if ok {
-				err := w.WriteInt64Value(key, i64v)
+				err := w.WriteByteValue(key, &byv)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			f32v, ok := value.(*float32)
+			pi8v, ok := value.(*int8)
 			if ok {
-				err := w.WriteFloat32Value(key, f32v)
+				err := w.WriteInt8Value(key, pi8v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			f64v, ok := value.(*float64)
+			i8v, ok := value.(int8)
 			if ok {
-				err := w.WriteFloat64Value(key, f64v)
+				err := w.WriteInt8Value(key, &i8v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			uv, ok := value.(*uuid.UUID)
+			pi32v, ok := value.(*int32)
 			if ok {
-				err := w.WriteUUIDValue(key, uv)
+				err := w.WriteInt32Value(key, pi32v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			tv, ok := value.(*time.Time)
+			i32v, ok := value.(int32)
 			if ok {
-				err := w.WriteTimeValue(key, tv)
+				err := w.WriteInt32Value(key, &i32v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			dv, ok := value.(*absser.ISODuration)
+			pi64v, ok := value.(*int64)
 			if ok {
-				err := w.WriteISODurationValue(key, dv)
+				err := w.WriteInt64Value(key, pi64v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			tov, ok := value.(*absser.TimeOnly)
+			i64v, ok := value.(int64)
 			if ok {
-				err := w.WriteTimeOnlyValue(key, tov)
+				err := w.WriteInt64Value(key, &i64v)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			dov, ok := value.(*absser.DateOnly)
+			pf32v, ok := value.(*float32)
 			if ok {
-				err := w.WriteDateOnlyValue(key, dov)
+				err := w.WriteFloat32Value(key, pf32v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			f32v, ok := value.(float32)
+			if ok {
+				err := w.WriteFloat32Value(key, &f32v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pf64v, ok := value.(*float64)
+			if ok {
+				err := w.WriteFloat64Value(key, pf64v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			f64v, ok := value.(float64)
+			if ok {
+				err := w.WriteFloat64Value(key, &f64v)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			puv, ok := value.(*uuid.UUID)
+			if ok {
+				err := w.WriteUUIDValue(key, puv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			uv, ok := value.(uuid.UUID)
+			if ok {
+				err := w.WriteUUIDValue(key, &uv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			ptv, ok := value.(*time.Time)
+			if ok {
+				err := w.WriteTimeValue(key, ptv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			tv, ok := value.(time.Time)
+			if ok {
+				err := w.WriteTimeValue(key, &tv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pdv, ok := value.(*absser.ISODuration)
+			if ok {
+				err := w.WriteISODurationValue(key, pdv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			dv, ok := value.(absser.ISODuration)
+			if ok {
+				err := w.WriteISODurationValue(key, &dv)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			ptov, ok := value.(*absser.TimeOnly)
+			if ok {
+				err := w.WriteTimeOnlyValue(key, ptov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			tov, ok := value.(absser.TimeOnly)
+			if ok {
+				err := w.WriteTimeOnlyValue(key, &tov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			pdov, ok := value.(*absser.DateOnly)
+			if ok {
+				err := w.WriteDateOnlyValue(key, pdov)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			dov, ok := value.(absser.DateOnly)
+			if ok {
+				err := w.WriteDateOnlyValue(key, &dov)
 				if err != nil {
 					return err
 				}
@@ -817,8 +925,8 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				}
 				continue
 			}
+			return fmt.Errorf("unsupported AdditionalData type: %T", value)
 		}
-		w.trimLastPropertySeparator()
 	}
 	return nil
 }
