@@ -39,16 +39,8 @@ func (w *JsonSerializationWriter) writePropertySeparator() {
 func (w *JsonSerializationWriter) trimLastPropertySeparator() {
 	for idx, s := range w.writer {
 		writerLen := len(w.writer)
-		if s == "," {
-			if idx <= writerLen-1 {
-				if idx == writerLen-1 {
-					w.writer[idx] = ""
-					continue
-				}
-				if w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == "," {
-					w.writer[idx] = ""
-				}
-			}
+		if s == "," && (idx == writerLen-1 || (idx < writerLen-1 && (w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == ","))) {
+			w.writer[idx] = ""
 		}
 	}
 }
