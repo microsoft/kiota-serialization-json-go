@@ -27,7 +27,7 @@ func (w *JsonSerializationWriter) writeRawValue(value string) {
 	w.writer = append(w.writer, value)
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
-	value = strings.ReplaceAll(value, "\"", "\\\"")
+	value = strings.ReplaceAll(strings.ReplaceAll(value, "\"", "\\\""), "\n", "\\n")
 	w.writeRawValue("\"" + value + "\"")
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {

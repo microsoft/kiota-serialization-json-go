@@ -184,3 +184,12 @@ func TestWriteInvalidAdditionalData(t *testing.T) {
 	expErr := fmt.Sprintf("unsupported AdditionalData type: %T", value)
 	assert.EqualErrorf(t, err, expErr, "Error should be: %v, got: %v", expErr, err)
 }
+
+func TestEscapesNewLinesInStrings(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "value\nwith\nnew\nlines"
+	serializer.WriteStringValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, "\"key\":\"value\\nwith\\nnew\\nlines\"", string(result[:]))
+}

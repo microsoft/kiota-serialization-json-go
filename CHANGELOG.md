@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.5.3] - 2022-06-09
+
+### Changed
+
+- Fixed a bug where new lines in string values would not be escaped generating invalid JSON.
+
 ## [0.5.2] - 2022-06-07
 
 ### Changed
