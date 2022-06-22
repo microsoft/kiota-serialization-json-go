@@ -3,7 +3,6 @@ package jsonserialization
 import (
 	"encoding/base64"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -586,9 +585,7 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 	return []byte(resultStr), nil
 }
 
-// WriteAdditionalData writes additional data to underlying the byte array.
-
-//TODO DANNY
+// WriteAdditionalData writes additional data to underlying the byte array. Dependent on writeAdditional
 func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface{}) error {
 	if len(value) != 0 {
 		for key, value := range value {
@@ -601,6 +598,8 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 	return nil
 }
 
+// writeAdditional Helper function for writing additional data. Feature adds
+// the ability to support certain map types.
 func (w *JsonSerializationWriter) writeAdditional(key string, input any) error {
 	var err error
 	switch value := input.(type) {
@@ -707,6 +706,13 @@ func (w *JsonSerializationWriter) writeAdditional(key string, input any) error {
 				return err
 			}
 		}
+	case map[string]int64:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
 	case map[string]string:
 		for subkey, subvalue := range value {
 			err := w.writeAdditional(subkey, subvalue)
@@ -729,24 +735,6 @@ func (w *JsonSerializationWriter) writeAdditional(key string, input any) error {
 			}
 		}
 	default:
-		v := reflect.ValueOf(value)
-		t := reflect.TypeOf(value)
-		fmt.Printf("This is: %v\n Type: %v\n", v.Kind(), t)
-		if reflect.Map == v.Kind() {
-			fmt.Println("Do we?")
-			myMap, ok := value.(map[string]any)
-			fmt.Printf("%v", myMap)
-			if ok {
-				fmt.Println("Do we 2?")
-				for subkey, subvalue := range myMap {
-					err = w.writeAdditional(subkey, subvalue)
-					if err != nil {
-						return err
-					}
-				}
-				return nil
-			}
-		}
 		return fmt.Errorf("unsupported AdditionalData type: %T", value)
 	}
 	return err
