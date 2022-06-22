@@ -3,6 +3,7 @@ package jsonserialization
 import (
 	"encoding/base64"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -586,349 +587,169 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 }
 
 // WriteAdditionalData writes additional data to underlying the byte array.
+
+//TODO DANNY
 func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface{}) error {
 	if len(value) != 0 {
 		for key, value := range value {
-			p, ok := value.(absser.Parsable)
-			if ok {
-				err := w.WriteObjectValue(key, p)
-				if err != nil {
-					return err
-				}
-				continue
+			err := w.writeAdditional(key, value)
+			if err != nil {
+				return err
 			}
-			c, ok := value.([]absser.Parsable)
-			if ok {
-				err := w.WriteCollectionOfObjectValues(key, c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			sc, ok := value.([]string)
-			if ok {
-				err := w.WriteCollectionOfStringValues(key, sc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			bc, ok := value.([]bool)
-			if ok {
-				err := w.WriteCollectionOfBoolValues(key, bc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			byc, ok := value.([]byte)
-			if ok {
-				err := w.WriteCollectionOfByteValues(key, byc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i8c, ok := value.([]int8)
-			if ok {
-				err := w.WriteCollectionOfInt8Values(key, i8c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i32c, ok := value.([]int32)
-			if ok {
-				err := w.WriteCollectionOfInt32Values(key, i32c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i64c, ok := value.([]int64)
-			if ok {
-				err := w.WriteCollectionOfInt64Values(key, i64c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			f32c, ok := value.([]float32)
-			if ok {
-				err := w.WriteCollectionOfFloat32Values(key, f32c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			f64c, ok := value.([]float64)
-			if ok {
-				err := w.WriteCollectionOfFloat64Values(key, f64c)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			uc, ok := value.([]uuid.UUID)
-			if ok {
-				err := w.WriteCollectionOfUUIDValues(key, uc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			tc, ok := value.([]time.Time)
-			if ok {
-				err := w.WriteCollectionOfTimeValues(key, tc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			dc, ok := value.([]absser.ISODuration)
-			if ok {
-				err := w.WriteCollectionOfISODurationValues(key, dc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			toc, ok := value.([]absser.TimeOnly)
-			if ok {
-				err := w.WriteCollectionOfTimeOnlyValues(key, toc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			doc, ok := value.([]absser.DateOnly)
-			if ok {
-				err := w.WriteCollectionOfDateOnlyValues(key, doc)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			psv, ok := value.(*string)
-			if ok {
-				err := w.WriteStringValue(key, psv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			sv, ok := value.(string)
-			if ok {
-				err := w.WriteStringValue(key, &sv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pbv, ok := value.(*bool)
-			if ok {
-				err := w.WriteBoolValue(key, pbv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			bv, ok := value.(bool)
-			if ok {
-				err := w.WriteBoolValue(key, &bv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pbyv, ok := value.(*byte)
-			if ok {
-				err := w.WriteByteValue(key, pbyv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			byv, ok := value.(byte)
-			if ok {
-				err := w.WriteByteValue(key, &byv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pi8v, ok := value.(*int8)
-			if ok {
-				err := w.WriteInt8Value(key, pi8v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i8v, ok := value.(int8)
-			if ok {
-				err := w.WriteInt8Value(key, &i8v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pi32v, ok := value.(*int32)
-			if ok {
-				err := w.WriteInt32Value(key, pi32v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i32v, ok := value.(int32)
-			if ok {
-				err := w.WriteInt32Value(key, &i32v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pi64v, ok := value.(*int64)
-			if ok {
-				err := w.WriteInt64Value(key, pi64v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			i64v, ok := value.(int64)
-			if ok {
-				err := w.WriteInt64Value(key, &i64v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pf32v, ok := value.(*float32)
-			if ok {
-				err := w.WriteFloat32Value(key, pf32v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			f32v, ok := value.(float32)
-			if ok {
-				err := w.WriteFloat32Value(key, &f32v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pf64v, ok := value.(*float64)
-			if ok {
-				err := w.WriteFloat64Value(key, pf64v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			f64v, ok := value.(float64)
-			if ok {
-				err := w.WriteFloat64Value(key, &f64v)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			puv, ok := value.(*uuid.UUID)
-			if ok {
-				err := w.WriteUUIDValue(key, puv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			uv, ok := value.(uuid.UUID)
-			if ok {
-				err := w.WriteUUIDValue(key, &uv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			ptv, ok := value.(*time.Time)
-			if ok {
-				err := w.WriteTimeValue(key, ptv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			tv, ok := value.(time.Time)
-			if ok {
-				err := w.WriteTimeValue(key, &tv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pdv, ok := value.(*absser.ISODuration)
-			if ok {
-				err := w.WriteISODurationValue(key, pdv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			dv, ok := value.(absser.ISODuration)
-			if ok {
-				err := w.WriteISODurationValue(key, &dv)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			ptov, ok := value.(*absser.TimeOnly)
-			if ok {
-				err := w.WriteTimeOnlyValue(key, ptov)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			tov, ok := value.(absser.TimeOnly)
-			if ok {
-				err := w.WriteTimeOnlyValue(key, &tov)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			pdov, ok := value.(*absser.DateOnly)
-			if ok {
-				err := w.WriteDateOnlyValue(key, pdov)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			dov, ok := value.(absser.DateOnly)
-			if ok {
-				err := w.WriteDateOnlyValue(key, &dov)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			ba, ok := value.([]byte)
-			if ok {
-				err := w.WriteByteArrayValue(key, ba)
-				if err != nil {
-					return err
-				}
-				continue
-			}
-			return fmt.Errorf("unsupported AdditionalData type: %T", value)
 		}
 	}
 	return nil
+}
+
+func (w *JsonSerializationWriter) writeAdditional(key string, input any) error {
+	var err error
+	switch value := input.(type) {
+	case absser.Parsable:
+		err = w.WriteObjectValue(key, value)
+	case []absser.Parsable:
+		err = w.WriteCollectionOfObjectValues(key, value)
+	case []string:
+		err = w.WriteCollectionOfStringValues(key, value)
+	case []bool:
+		err = w.WriteCollectionOfBoolValues(key, value)
+	case []byte:
+		err = w.WriteCollectionOfByteValues(key, value)
+	case []int8:
+		err = w.WriteCollectionOfInt8Values(key, value)
+	case []int32:
+		err = w.WriteCollectionOfInt32Values(key, value)
+	case []int64:
+		err = w.WriteCollectionOfInt64Values(key, value)
+	case []float32:
+		err = w.WriteCollectionOfFloat32Values(key, value)
+	case []float64:
+		err = w.WriteCollectionOfFloat64Values(key, value)
+	case []uuid.UUID:
+		err = w.WriteCollectionOfUUIDValues(key, value)
+	case []time.Time:
+		err = w.WriteCollectionOfTimeValues(key, value)
+	case []absser.ISODuration:
+		err = w.WriteCollectionOfISODurationValues(key, value)
+	case []absser.TimeOnly:
+		err = w.WriteCollectionOfTimeOnlyValues(key, value)
+	case []absser.DateOnly:
+		err = w.WriteCollectionOfDateOnlyValues(key, value)
+	case *string:
+		err = w.WriteStringValue(key, value)
+	case string:
+		err = w.WriteStringValue(key, &value)
+	case *bool:
+		err = w.WriteBoolValue(key, value)
+	case bool:
+		err = w.WriteBoolValue(key, &value)
+	case *byte:
+		err = w.WriteByteValue(key, value)
+	case byte:
+		err = w.WriteByteValue(key, &value)
+	case *int8:
+		err = w.WriteInt8Value(key, value)
+	case int8:
+		err = w.WriteInt8Value(key, &value)
+	case *int32:
+		err = w.WriteInt32Value(key, value)
+	case int32:
+		err = w.WriteInt32Value(key, &value)
+	case *int64:
+		err = w.WriteInt64Value(key, value)
+	case int64:
+		err = w.WriteInt64Value(key, &value)
+	case *float32:
+		err = w.WriteFloat32Value(key, value)
+	case float32:
+		err = w.WriteFloat32Value(key, &value)
+	case *float64:
+		err = w.WriteFloat64Value(key, value)
+	case float64:
+		err = w.WriteFloat64Value(key, &value)
+	case *uuid.UUID:
+		err = w.WriteUUIDValue(key, value)
+	case uuid.UUID:
+		err = w.WriteUUIDValue(key, &value)
+	case *time.Time:
+		err = w.WriteTimeValue(key, value)
+	case time.Time:
+		err = w.WriteTimeValue(key, &value)
+	case *absser.ISODuration:
+		err = w.WriteISODurationValue(key, value)
+	case absser.ISODuration:
+		err = w.WriteISODurationValue(key, &value)
+	case *absser.TimeOnly:
+		err = w.WriteTimeOnlyValue(key, value)
+	case absser.TimeOnly:
+		err = w.WriteTimeOnlyValue(key, &value)
+	case *absser.DateOnly:
+		err = w.WriteDateOnlyValue(key, value)
+	case absser.DateOnly:
+		err = w.WriteDateOnlyValue(key, &value)
+	case map[string]int32:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	case map[string]*int32:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	case map[string]*int64:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	case map[string]string:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	case map[string]*string:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	case map[string]absser.Parsable:
+		for subkey, subvalue := range value {
+			err := w.writeAdditional(subkey, subvalue)
+			if err != nil {
+				return err
+			}
+		}
+	default:
+		v := reflect.ValueOf(value)
+		t := reflect.TypeOf(value)
+		fmt.Printf("This is: %v\n Type: %v\n", v.Kind(), t)
+		if reflect.Map == v.Kind() {
+			fmt.Println("Do we?")
+			myMap, ok := value.(map[string]any)
+			fmt.Printf("%v", myMap)
+			if ok {
+				fmt.Println("Do we 2?")
+				for subkey, subvalue := range myMap {
+					err = w.writeAdditional(subkey, subvalue)
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+		}
+		return fmt.Errorf("unsupported AdditionalData type: %T", value)
+	}
+	return err
 }
 
 // Close clears the internal buffer.

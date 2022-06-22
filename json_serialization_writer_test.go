@@ -193,3 +193,32 @@ func TestEscapesNewLinesInStrings(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "\"key\":\"value\\nwith\\nnew\\nlines\"", string(result[:]))
 }
+
+func TestAdditionalDataWithEmbeddedMaps(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	data := "a string"
+	aNum := int32(4)
+	aBool := false
+	adlData := map[string]interface{}{
+		"type":        "map test",
+		"isDelegated": true,
+		"location": map[string]*string{"displayName": (*string)(&data),
+			"locationType": (*string)(&data),
+			"uniqueIdType": (*string)(&data)},
+		"startDateTime": map[string]*int32{"dateTime": (*int32)(&aNum),
+			"timeZone": (*int32)(&aNum)},
+		"endDateTime": map[string]int32{"dateTime": *(*int32)(&aNum),
+			"timeZone": *(*int32)(&aNum)},
+		"meetingMessageType": &data,
+		"meetingRequestType": &aNum,
+		"@odata.type":        int32(13),
+		"@odata.etag":        "W/\"CwAAABYAAADSEBNbUIB9RL6ePDeF3FIYAAAAAAsl\"",
+		"isOutOfDate":        &aBool,
+		"responseRequested":  aBool,
+	}
+	err := serializer.WriteAdditionalData(adlData)
+	assert.NoError(t, err)
+	bytes, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	assert.Greater(t, len(bytes), 0)
+}
