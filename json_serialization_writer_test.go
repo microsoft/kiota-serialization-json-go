@@ -222,3 +222,35 @@ func TestAdditionalDataWithEmbeddedMaps(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, len(bytes), 0)
 }
+
+func TestAdditionalDataEmbeddedComplex(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	time, err := NewJsonParseNode([]byte("\"receivedDateTime\": \"2021-10-14T09:19:02Z\","))
+	if err != nil {
+		t.Error("setup failure: ParseNode creation")
+	}
+	tz, err := NewJsonParseNode([]byte("\"timeZone\": \"UTC\""))
+	if err != nil {
+		t.Error("setup failure: ParseNode creation")
+	}
+	aBool := false
+	aString := "singleInstance"
+	adlData := map[string]interface{}{
+		"@odata.context":     "f435c656-f8b2-4dmessages/entity",
+		"type":               &aString,
+		"endDateTime":        map[string]*JsonParseNode{"dateTime": time, "timeZone": tz},
+		"isDelegated":        &aBool,
+		"meetingMessageType": aBool,
+		"responseType":       "accepted",
+		"@odata.type":        "#microsoft.graph.eventMessageResponse",
+		"@odata.etag":        "W/\"DAAAABYRpEYIUq+AAAfar4a\"",
+		"isAllDay":           &aBool,
+		"startDateTime":      map[string]*JsonParseNode{"dateTime": time, "timeZone": tz},
+		"isOutOfDate":        aBool,
+	}
+	err = serializer.WriteAdditionalData(adlData)
+	assert.NoError(t, err)
+	bytes, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	assert.Greater(t, len(bytes), 0)
+}
