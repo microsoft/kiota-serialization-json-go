@@ -587,106 +587,96 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 
 // WriteAdditionalData writes additional data to underlying the byte array. Dependent on writeAdditional
 func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface{}) error {
+	var err error
 	if len(value) != 0 {
-		for key, value := range value {
-			err := w.writeAdditional(key, value)
-			if err != nil {
-				return err
+		for key, input := range value {
+			switch value := input.(type) {
+			case absser.Parsable:
+				err = w.WriteObjectValue(key, value)
+			case []absser.Parsable:
+				err = w.WriteCollectionOfObjectValues(key, value)
+			case []string:
+				err = w.WriteCollectionOfStringValues(key, value)
+			case []bool:
+				err = w.WriteCollectionOfBoolValues(key, value)
+			case []byte:
+				err = w.WriteCollectionOfByteValues(key, value)
+			case []int8:
+				err = w.WriteCollectionOfInt8Values(key, value)
+			case []int32:
+				err = w.WriteCollectionOfInt32Values(key, value)
+			case []int64:
+				err = w.WriteCollectionOfInt64Values(key, value)
+			case []float32:
+				err = w.WriteCollectionOfFloat32Values(key, value)
+			case []float64:
+				err = w.WriteCollectionOfFloat64Values(key, value)
+			case []uuid.UUID:
+				err = w.WriteCollectionOfUUIDValues(key, value)
+			case []time.Time:
+				err = w.WriteCollectionOfTimeValues(key, value)
+			case []absser.ISODuration:
+				err = w.WriteCollectionOfISODurationValues(key, value)
+			case []absser.TimeOnly:
+				err = w.WriteCollectionOfTimeOnlyValues(key, value)
+			case []absser.DateOnly:
+				err = w.WriteCollectionOfDateOnlyValues(key, value)
+			case *string:
+				err = w.WriteStringValue(key, value)
+			case string:
+				err = w.WriteStringValue(key, &value)
+			case *bool:
+				err = w.WriteBoolValue(key, value)
+			case bool:
+				err = w.WriteBoolValue(key, &value)
+			case *byte:
+				err = w.WriteByteValue(key, value)
+			case byte:
+				err = w.WriteByteValue(key, &value)
+			case *int8:
+				err = w.WriteInt8Value(key, value)
+			case int8:
+				err = w.WriteInt8Value(key, &value)
+			case *int32:
+				err = w.WriteInt32Value(key, value)
+			case int32:
+				err = w.WriteInt32Value(key, &value)
+			case *int64:
+				err = w.WriteInt64Value(key, value)
+			case int64:
+				err = w.WriteInt64Value(key, &value)
+			case *float32:
+				err = w.WriteFloat32Value(key, value)
+			case float32:
+				err = w.WriteFloat32Value(key, &value)
+			case *float64:
+				err = w.WriteFloat64Value(key, value)
+			case float64:
+				err = w.WriteFloat64Value(key, &value)
+			case *uuid.UUID:
+				err = w.WriteUUIDValue(key, value)
+			case uuid.UUID:
+				err = w.WriteUUIDValue(key, &value)
+			case *time.Time:
+				err = w.WriteTimeValue(key, value)
+			case time.Time:
+				err = w.WriteTimeValue(key, &value)
+			case *absser.ISODuration:
+				err = w.WriteISODurationValue(key, value)
+			case absser.ISODuration:
+				err = w.WriteISODurationValue(key, &value)
+			case *absser.TimeOnly:
+				err = w.WriteTimeOnlyValue(key, value)
+			case absser.TimeOnly:
+				err = w.WriteTimeOnlyValue(key, &value)
+			case *absser.DateOnly:
+				err = w.WriteDateOnlyValue(key, value)
+			case absser.DateOnly:
+				err = w.WriteDateOnlyValue(key, &value)
+			default:
+				return fmt.Errorf("unsupported AdditionalData type: %T", value)
 			}
 		}
-	}
-	return nil
-}
-
-// writeAdditional Helper function for writing additional data. Feature adds
-// the ability to support certain map types.
-func (w *JsonSerializationWriter) writeAdditional(key string, input any) error {
-	var err error
-	switch value := input.(type) {
-	case absser.Parsable:
-		err = w.WriteObjectValue(key, value)
-	case []absser.Parsable:
-		err = w.WriteCollectionOfObjectValues(key, value)
-	case []string:
-		err = w.WriteCollectionOfStringValues(key, value)
-	case []bool:
-		err = w.WriteCollectionOfBoolValues(key, value)
-	case []byte:
-		err = w.WriteCollectionOfByteValues(key, value)
-	case []int8:
-		err = w.WriteCollectionOfInt8Values(key, value)
-	case []int32:
-		err = w.WriteCollectionOfInt32Values(key, value)
-	case []int64:
-		err = w.WriteCollectionOfInt64Values(key, value)
-	case []float32:
-		err = w.WriteCollectionOfFloat32Values(key, value)
-	case []float64:
-		err = w.WriteCollectionOfFloat64Values(key, value)
-	case []uuid.UUID:
-		err = w.WriteCollectionOfUUIDValues(key, value)
-	case []time.Time:
-		err = w.WriteCollectionOfTimeValues(key, value)
-	case []absser.ISODuration:
-		err = w.WriteCollectionOfISODurationValues(key, value)
-	case []absser.TimeOnly:
-		err = w.WriteCollectionOfTimeOnlyValues(key, value)
-	case []absser.DateOnly:
-		err = w.WriteCollectionOfDateOnlyValues(key, value)
-	case *string:
-		err = w.WriteStringValue(key, value)
-	case string:
-		err = w.WriteStringValue(key, &value)
-	case *bool:
-		err = w.WriteBoolValue(key, value)
-	case bool:
-		err = w.WriteBoolValue(key, &value)
-	case *byte:
-		err = w.WriteByteValue(key, value)
-	case byte:
-		err = w.WriteByteValue(key, &value)
-	case *int8:
-		err = w.WriteInt8Value(key, value)
-	case int8:
-		err = w.WriteInt8Value(key, &value)
-	case *int32:
-		err = w.WriteInt32Value(key, value)
-	case int32:
-		err = w.WriteInt32Value(key, &value)
-	case *int64:
-		err = w.WriteInt64Value(key, value)
-	case int64:
-		err = w.WriteInt64Value(key, &value)
-	case *float32:
-		err = w.WriteFloat32Value(key, value)
-	case float32:
-		err = w.WriteFloat32Value(key, &value)
-	case *float64:
-		err = w.WriteFloat64Value(key, value)
-	case float64:
-		err = w.WriteFloat64Value(key, &value)
-	case *uuid.UUID:
-		err = w.WriteUUIDValue(key, value)
-	case uuid.UUID:
-		err = w.WriteUUIDValue(key, &value)
-	case *time.Time:
-		err = w.WriteTimeValue(key, value)
-	case time.Time:
-		err = w.WriteTimeValue(key, &value)
-	case *absser.ISODuration:
-		err = w.WriteISODurationValue(key, value)
-	case absser.ISODuration:
-		err = w.WriteISODurationValue(key, &value)
-	case *absser.TimeOnly:
-		err = w.WriteTimeOnlyValue(key, value)
-	case absser.TimeOnly:
-		err = w.WriteTimeOnlyValue(key, &value)
-	case *absser.DateOnly:
-		err = w.WriteDateOnlyValue(key, value)
-	case absser.DateOnly:
-		err = w.WriteDateOnlyValue(key, &value)
-	default:
-		return fmt.Errorf("unsupported AdditionalData type: %T", value)
 	}
 	return err
 }
