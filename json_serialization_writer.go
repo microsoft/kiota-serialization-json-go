@@ -585,7 +585,7 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 	return []byte(resultStr), nil
 }
 
-// WriteAdditionalData writes additional data to underlying the byte array. Dependent on writeAdditional
+// WriteAdditionalData writes additional data to underlying the byte array.
 func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface{}) error {
 	var err error
 	if len(value) != 0 {
