@@ -1,6 +1,7 @@
 package jsonserialization
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -192,4 +193,29 @@ func TestEscapesNewLinesInStrings(t *testing.T) {
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
 	assert.Equal(t, "\"key\":\"value\\nwith\\nnew\\nlines\"", string(result[:]))
+
+	fullPayload := "{" + string(result[:]) + "}"
+	var parsedResult TestStruct
+	parseErr := json.Unmarshal([]byte(fullPayload), &parsedResult)
+	assert.Nil(t, parseErr)
+	assert.Equal(t, value, parsedResult.Key)
+}
+
+func TestEscapesBackslashesInStrings(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "value\\with\\backslashes"
+	serializer.WriteStringValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, "\"key\":\"value\\\\with\\\\backslashes\"", string(result[:]))
+
+	fullPayload := "{" + string(result[:]) + "}"
+	var parsedResult TestStruct
+	parseErr := json.Unmarshal([]byte(fullPayload), &parsedResult)
+	assert.Nil(t, parseErr)
+	assert.Equal(t, value, parsedResult.Key)
+}
+
+type TestStruct struct {
+	Key string `json:"key"`
 }

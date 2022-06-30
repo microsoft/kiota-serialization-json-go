@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.5.4] - 2022-06-30
+
+### Changed
+
+- Fixed a bug where a backslash in a string would result in an invalid payload.
+
 ## [0.5.3] - 2022-06-09
 
 ### Changed
