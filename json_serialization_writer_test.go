@@ -216,6 +216,18 @@ func TestEscapesBackslashesInStrings(t *testing.T) {
 	assert.Equal(t, value, parsedResult.Key)
 }
 
+func TestEscapeTabAndCarriageReturnInStrings(t *testing.T) {
+	doubleB := "<html lang=\"en\" style=\"min-height:100%;\t background:#ffffff\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta name=\"eventId\" ^Mcontent=\"aad-identity-protection-weekly-digest-report-v2\"><meta name=\"messageId\" content=\"d4db577e-fe10-4bea-8e6d-164bb1ebb039\">"
+	expected := "\"<html lang=\\\"en\\\" style=\\\"min-height:100%;\\t background:#ffffff\\\"><head><meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=utf-8\\\"><meta name=\\\"viewport\\\" content=\\\"width=device-width\\\"><meta name=\\\"eventId\\\" ^Mcontent=\\\"aad-identity-protection-weekly-digest-report-v2\\\"><meta name=\\\"messageId\\\" content=\\\"d4db577e-fe10-4bea-8e6d-164bb1ebb039\\\">\""
+	serializer := NewJsonSerializationWriter()
+	err := serializer.WriteStringValue("", &doubleB)
+	assert.NoError(t, err)
+	result, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	converted := string(result)
+	assert.Equal(t, expected, converted)
+}
+
 type TestStruct struct {
 	Key string `json:"key"`
 }
