@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-## [0.5.4] - 2022-07-11
+## [0.5.5] - 2022-07-12
 
 - Fixed bug where string literals of `\t` and `\r` would result in generating an invalid JSON. 
 
