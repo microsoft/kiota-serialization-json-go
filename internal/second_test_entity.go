@@ -4,7 +4,7 @@ import absser "github.com/microsoft/kiota-abstractions-go/serialization"
 
 type SecondTestEntity struct {
 	displayName *string
-	id          *string
+	id          *int64
 	failureRate *float64
 }
 
@@ -12,8 +12,8 @@ type SecondTestEntityable interface {
 	absser.Parsable
 	GetDisplayName() *string
 	SetDisplayName(value *string)
-	GetId() *string
-	SetId(value *string)
+	GetId() *int64
+	SetId(value *int64)
 	GetFailureRate() *float64
 	SetFailureRate(value *float64)
 }
@@ -28,10 +28,10 @@ func (e *SecondTestEntity) GetDisplayName() *string {
 func (e *SecondTestEntity) SetDisplayName(value *string) {
 	e.displayName = value
 }
-func (e *SecondTestEntity) GetId() *string {
+func (e *SecondTestEntity) GetId() *int64 {
 	return e.id
 }
-func (e *SecondTestEntity) SetId(value *string) {
+func (e *SecondTestEntity) SetId(value *int64) {
 	e.id = value
 }
 func (e *SecondTestEntity) GetFailureRate() *float64 {
@@ -48,7 +48,7 @@ func CreateSecondTestEntityFromDiscriminator(parseNode absser.ParseNode) (absser
 func (e *SecondTestEntity) GetFieldDeserializers() map[string]func(absser.ParseNode) error {
 	res := make(map[string]func(absser.ParseNode) error)
 	res["id"] = func(n absser.ParseNode) error {
-		val, err := n.GetStringValue()
+		val, err := n.GetInt64Value()
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (e *SecondTestEntity) GetFieldDeserializers() map[string]func(absser.ParseN
 }
 func (m *SecondTestEntity) Serialize(writer absser.SerializationWriter) error {
 	{
-		err := writer.WriteStringValue("id", m.GetId())
+		err := writer.WriteInt64Value("id", m.GetId())
 		if err != nil {
 			return err
 		}

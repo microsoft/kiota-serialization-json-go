@@ -68,12 +68,22 @@ func CreateUnionTypeMockableFromDiscriminator(parseNode absser.ParseNode) (absse
 			} else if strings.EqualFold(*mappingValue, "#microsoft.graph.secondTestEntity") {
 				result.SetComposedType2(NewSecondTestEntity())
 			}
-		} else if val, err := parseNode.GetStringValue(); val != nil {
-			if err != nil {
-				return nil, err
-			}
-			result.SetStringValue(val)
 		}
+	}
+	if val, err := parseNode.GetStringValue(); val != nil {
+		if err != nil {
+			return nil, err
+		}
+		result.SetStringValue(val)
+	} else if val, err := parseNode.GetCollectionOfObjectValues(CreateTestEntityFromDiscriminator); val != nil {
+		if err != nil {
+			return nil, err
+		}
+		cast := make([]TestEntityable, len(val))
+		for i, v := range val {
+			cast[i] = v.(TestEntityable)
+		}
+		result.SetComposedType3(cast)
 	}
 	return result, nil
 }
