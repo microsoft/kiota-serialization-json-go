@@ -24,7 +24,7 @@ type UnionTypeMockable interface {
 	SetComposedType3(value []TestEntityable)
 }
 
-func NewUnionTypeMockable() *UnionTypeMock {
+func NewUnionTypeMock() *UnionTypeMock {
 	return &UnionTypeMock{}
 }
 func (e *UnionTypeMock) GetComposedType1() TestEntityable {
@@ -51,8 +51,8 @@ func (e *UnionTypeMock) GetComposedType3() []TestEntityable {
 func (e *UnionTypeMock) SetComposedType3(value []TestEntityable) {
 	e.composedType3 = value
 }
-func CreateUnionTypeMockableFromDiscriminator(parseNode absser.ParseNode) (absser.Parsable, error) {
-	result := NewUnionTypeMockable()
+func CreateUnionTypeMockFromDiscriminator(parseNode absser.ParseNode) (absser.Parsable, error) {
+	result := NewUnionTypeMock()
 	mappingValueNode, err := parseNode.GetChildNode("@odata.type")
 	if err != nil {
 		return nil, err

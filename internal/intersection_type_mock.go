@@ -8,12 +8,12 @@ type IntersectionTypeMock struct {
 	stringValue   *string
 	composedType3 []TestEntityable
 }
-type IntersectionTypeMockAble interface {
+type IntersectionTypeMockable interface {
 	absser.Parsable
-	GetComposedType1() *TestEntity
-	SetComposedType1(value *TestEntity)
-	GetComposedType2() *SecondTestEntity
-	SetComposedType2(value *SecondTestEntity)
+	GetComposedType1() TestEntityable
+	SetComposedType1(value TestEntityable)
+	GetComposedType2() SecondTestEntityable
+	SetComposedType2(value SecondTestEntityable)
 	GetStringValue() *string
 	SetStringValue(value *string)
 	GetComposedType3() []TestEntityable

@@ -252,11 +252,14 @@ func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsa
 		}
 		//TODO onBefore for backing store
 		w.writeObjectStart()
-		//TODO onStart for backing store
-		err := item.Serialize(w)
-		//TODO onAfter for backing store
-		if err != nil {
-			return err
+		if item != nil {
+			//TODO onStart for backing store
+			err := item.Serialize(w)
+
+			//TODO onAfter for backing store
+			if err != nil {
+				return err
+			}
 		}
 
 		for _, additionalValue := range additionalValuesToMerge {

@@ -7,52 +7,54 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestItParsesUnionTypeComplexProperty1(t *testing.T) {
-	source := "{\"@odata.type\":\"#microsoft.graph.testEntity\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
+func TestItParsesIntersectionTypeComplexProperty1(t *testing.T) {
+	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
 	sourceArray := []byte(source)
 	parseNode, err := NewJsonParseNode(sourceArray)
 
 	if err != nil {
 		t.Error(err)
 	}
-	result, err := parseNode.GetObjectValue(internal.CreateUnionTypeMockFromDiscriminator)
+	result, err := parseNode.GetObjectValue(internal.CreateIntersectionTypeMockFromDiscriminator)
 	if err != nil {
 		t.Error(err)
 	}
 	assert.NotNil(t, result)
-	cast, ok := result.(internal.UnionTypeMockable)
+	cast, ok := result.(internal.IntersectionTypeMockable)
 	assert.True(t, ok)
 	assert.NotNil(t, cast.GetComposedType1())
-	assert.Nil(t, cast.GetComposedType2())
-	assert.Nil(t, cast.GetStringValue())
-	assert.Nil(t, cast.GetComposedType3())
-	assert.Equal(t, "Montreal", *cast.GetComposedType1().GetOfficeLocation())
-	assert.Equal(t, "opaque", *cast.GetComposedType1().GetId())
-}
-
-func TestItParsesUnionTypeComplexProperty2(t *testing.T) {
-	source := "{\"@odata.type\":\"#microsoft.graph.secondTestEntity\",\"officeLocation\":\"Montreal\", \"id\": 10}"
-	sourceArray := []byte(source)
-	parseNode, err := NewJsonParseNode(sourceArray)
-
-	if err != nil {
-		t.Error(err)
-	}
-	result, err := parseNode.GetObjectValue(internal.CreateUnionTypeMockFromDiscriminator)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.NotNil(t, result)
-	cast, ok := result.(internal.UnionTypeMockable)
-	assert.True(t, ok)
-	assert.Nil(t, cast.GetComposedType1())
 	assert.NotNil(t, cast.GetComposedType2())
 	assert.Nil(t, cast.GetStringValue())
 	assert.Nil(t, cast.GetComposedType3())
-	assert.Equal(t, int64(10), *cast.GetComposedType2().GetId())
+	assert.Equal(t, "McGill", *cast.GetComposedType2().GetDisplayName())
+	assert.Equal(t, "opaque", *cast.GetComposedType1().GetId())
 }
 
-func TestItParsesUnionTypeComplexProperty3(t *testing.T) {
+func TestItParsesIntersectionTypeComplexProperty2(t *testing.T) {
+	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": 10}"
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+
+	if err != nil {
+		t.Error(err)
+	}
+	result, err := parseNode.GetObjectValue(internal.CreateIntersectionTypeMockFromDiscriminator)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.NotNil(t, result)
+	cast, ok := result.(internal.IntersectionTypeMockable)
+	assert.True(t, ok)
+	assert.NotNil(t, cast.GetComposedType1())
+	assert.NotNil(t, cast.GetComposedType2())
+	assert.Nil(t, cast.GetStringValue())
+	assert.Nil(t, cast.GetComposedType3())
+	assert.Nil(t, cast.GetComposedType1().GetId())
+	assert.Nil(t, cast.GetComposedType2().GetId()) // it's expected to be null since we have conflicting properties here and the parser will only try one to avoid having to brute its way through
+	assert.Equal(t, "McGill", *cast.GetComposedType2().GetDisplayName())
+}
+
+func TestItParsesIntersectionTypeComplexProperty3(t *testing.T) {
 	source := "[{\"@odata.type\":\"#microsoft.graph.TestEntity\",\"officeLocation\":\"Ottawa\", \"id\": \"11\"}, {\"@odata.type\":\"#microsoft.graph.TestEntity\",\"officeLocation\":\"Montreal\", \"id\": \"10\"}]"
 	sourceArray := []byte(source)
 	parseNode, err := NewJsonParseNode(sourceArray)
@@ -60,22 +62,22 @@ func TestItParsesUnionTypeComplexProperty3(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	result, err := parseNode.GetObjectValue(internal.CreateUnionTypeMockFromDiscriminator)
+	result, err := parseNode.GetObjectValue(internal.CreateIntersectionTypeMockFromDiscriminator)
 	if err != nil {
 		t.Error(err)
 	}
 	assert.NotNil(t, result)
-	cast, ok := result.(internal.UnionTypeMockable)
+	cast, ok := result.(internal.IntersectionTypeMockable)
 	assert.True(t, ok)
 	assert.Nil(t, cast.GetComposedType1())
 	assert.Nil(t, cast.GetComposedType2())
 	assert.Nil(t, cast.GetStringValue())
 	assert.NotNil(t, cast.GetComposedType3())
 	assert.Equal(t, 2, len(cast.GetComposedType3()))
-	assert.Equal(t, "11", *cast.GetComposedType3()[0].GetId())
+	assert.Equal(t, "Ottawa", *cast.GetComposedType3()[0].GetOfficeLocation())
 }
 
-func TestItParsesUnionTypeStringValue(t *testing.T) {
+func TestItParsesIntersectionTypeStringValue(t *testing.T) {
 	source := "\"officeLocation\""
 	sourceArray := []byte(source)
 	parseNode, err := NewJsonParseNode(sourceArray)
@@ -83,47 +85,28 @@ func TestItParsesUnionTypeStringValue(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	result, err := parseNode.GetObjectValue(internal.CreateUnionTypeMockFromDiscriminator)
+	result, err := parseNode.GetObjectValue(internal.CreateIntersectionTypeMockFromDiscriminator)
 	if err != nil {
 		t.Error(err)
 	}
 	assert.NotNil(t, result)
-	cast, ok := result.(internal.UnionTypeMockable)
+	cast, ok := result.(internal.IntersectionTypeMockable)
 	assert.True(t, ok)
 	assert.Nil(t, cast.GetComposedType1())
 	assert.Nil(t, cast.GetComposedType2())
-	assert.Nil(t, cast.GetComposedType3())
 	assert.NotNil(t, cast.GetStringValue())
+	assert.Nil(t, cast.GetComposedType3())
 	assert.Equal(t, "officeLocation", *cast.GetStringValue())
 }
 
-func TestItSerializesUnionTypeStringValue(t *testing.T) {
-	value := "officeLocation"
-	source := internal.NewUnionTypeMock()
-	source.SetStringValue(&value)
-	writer := NewJsonSerializationWriter()
-	err := source.Serialize(writer)
-	if err != nil {
-		t.Error(err)
-	}
-	result, err := writer.GetSerializedContent()
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, "\"officeLocation\"", string(result))
-	defer writer.Close()
-}
-
-func TestItSerializesUnionTypeComplexProperty1(t *testing.T) {
-	source := internal.NewUnionTypeMock()
+func TestItSerializesIntersectionTypeComplexProperty1(t *testing.T) {
+	source := internal.NewIntersectionTypeMock()
 	prop1Value := internal.NewTestEntity()
 	idValue := "opaque"
 	prop1Value.SetId(&idValue)
 	officeLocationValue := "Montreal"
 	prop1Value.SetOfficeLocation(&officeLocationValue)
 	prop2Value := internal.NewSecondTestEntity()
-	idIntValue := int64(10)
-	prop2Value.SetId(&idIntValue)
 	displayNameValue := "McGill"
 	prop2Value.SetDisplayName(&displayNameValue)
 	source.SetComposedType1(prop1Value)
@@ -137,17 +120,17 @@ func TestItSerializesUnionTypeComplexProperty1(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, "{\"id\":\"opaque\",\"officeLocation\":\"Montreal\"}", string(result))
+	assert.Equal(t, "{\"id\":\"opaque\",\"officeLocation\":\"Montreal\",\"displayName\":\"McGill\"}", string(result))
 	defer writer.Close()
 }
 
-func TestItSerializesUnionTypeComplexProperty2(t *testing.T) {
-	source := internal.NewUnionTypeMock()
+func TestItSerializesIntersectionTypeComplexProperty2(t *testing.T) {
+	source := internal.NewIntersectionTypeMock()
 	prop2Value := internal.NewSecondTestEntity()
-	idIntValue := int64(10)
-	prop2Value.SetId(&idIntValue)
 	displayNameValue := "McGill"
 	prop2Value.SetDisplayName(&displayNameValue)
+	idValue := int64(10)
+	prop2Value.SetId(&idValue)
 	source.SetComposedType2(prop2Value)
 	writer := NewJsonSerializationWriter()
 	err := source.Serialize(writer)
@@ -162,8 +145,8 @@ func TestItSerializesUnionTypeComplexProperty2(t *testing.T) {
 	defer writer.Close()
 }
 
-func TestItSerializesUnionTypeComplexProperty3(t *testing.T) {
-	source := internal.NewUnionTypeMock()
+func TestItSerializesIntersectionTypeComplexProperty(t *testing.T) {
+	source := internal.NewIntersectionTypeMock()
 	prop3Value1 := internal.NewTestEntity()
 	idIntValue := "10"
 	prop3Value1.SetId(&idIntValue)
