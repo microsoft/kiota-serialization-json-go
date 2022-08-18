@@ -101,12 +101,14 @@ func (e *UnionTypeMock) Serialize(writer absser.SerializationWriter) error {
 		return writer.WriteObjectValue("", e.GetComposedType1())
 	} else if e.GetComposedType2() != nil {
 		return writer.WriteObjectValue("", e.GetComposedType2())
-	} else if e.GetComposedType2() != nil {
+	} else if e.GetComposedType3() != nil {
 		cast := make([]absser.Parsable, len(e.GetComposedType3()))
 		for i, v := range e.GetComposedType3() {
 			cast[i] = v.(absser.Parsable)
 		}
 		return writer.WriteCollectionOfObjectValues("", cast)
+	} else if e.GetStringValue() != nil {
+		return writer.WriteStringValue("", e.GetStringValue())
 	}
 	return nil
 }
