@@ -150,7 +150,7 @@ func (n *JsonParseNode) GetChildNode(index string) (absser.ParseNode, error) {
 	}
 	childNodes, ok := n.value.(map[string]*JsonParseNode)
 	if !ok || len(childNodes) == 0 {
-		return nil, errors.New("no child node available")
+		return nil, nil
 	}
 	return childNodes[index], nil
 }
@@ -169,11 +169,8 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	}
 	//TODO on before when implementing backing store
 	properties, ok := n.value.(map[string]*JsonParseNode)
-	if !ok {
-		return nil, errors.New("value is not an object")
-	}
 	fields := result.GetFieldDeserializers()
-	if len(properties) != 0 {
+	if ok && len(properties) != 0 {
 		itemAsHolder, isHolder := result.(absser.AdditionalDataHolder)
 		var itemAdditionalData map[string]interface{}
 		if isHolder {
@@ -310,7 +307,12 @@ func (n *JsonParseNode) GetStringValue() (*string, error) {
 	if n == nil || n.value == nil {
 		return nil, nil
 	}
-	return n.value.(*string), nil
+	res, ok := n.value.(*string)
+	if ok {
+		return res, nil
+	} else {
+		return nil, nil
+	}
 }
 
 // GetBoolValue returns a Bool value from the nodes.

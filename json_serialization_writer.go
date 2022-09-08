@@ -244,18 +244,32 @@ func (w *JsonSerializationWriter) WriteByteArrayValue(key string, value []byte) 
 }
 
 // WriteObjectValue writes a Parsable value to underlying the byte array.
-func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsable) error {
-	if item != nil {
+func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsable, additionalValuesToMerge ...absser.Parsable) error {
+	additionalValuesLen := len(additionalValuesToMerge)
+	if item != nil || additionalValuesLen > 0 {
 		if key != "" {
 			w.writePropertyName(key)
 		}
 		//TODO onBefore for backing store
 		w.writeObjectStart()
-		//TODO onStart for backing store
-		err := item.Serialize(w)
-		//TODO onAfter for backing store
-		if err != nil {
-			return err
+		if item != nil {
+			//TODO onStart for backing store
+			err := item.Serialize(w)
+
+			//TODO onAfter for backing store
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, additionalValue := range additionalValuesToMerge {
+			//TODO onBefore for backing store
+			//TODO onStart for backing store
+			err := additionalValue.Serialize(w)
+			if err != nil {
+				return err
+			}
+			//TODO onAfter for backing store
 		}
 
 		w.writeObjectEnd()

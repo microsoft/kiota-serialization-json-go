@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.6.0] - 2022-09-02
+
+### Added
+
+- Added support for composed types serialization.
+
 ## [0.5.6] - 2022-09-02
 
 - Upgrades abstractions and yaml dependencies.
