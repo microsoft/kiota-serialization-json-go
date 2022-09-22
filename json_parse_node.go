@@ -185,7 +185,11 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 			field := fields[key]
 			if field == nil {
 				if value != nil && isHolder {
-					itemAdditionalData[key] = value.value
+					rawValue, err := value.GetRawValue()
+					if err != nil {
+						return nil, err
+					}
+					itemAdditionalData[key] = rawValue
 				}
 			} else {
 				err := field(value)
@@ -473,4 +477,9 @@ func (n *JsonParseNode) GetByteArrayValue() ([]byte, error) {
 		return nil, nil
 	}
 	return base64.StdEncoding.DecodeString(*s)
+}
+
+// GetRawValue returns a ByteArray value from the nodes.
+func (n *JsonParseNode) GetRawValue() (interface{}, error) {
+	return n.value, nil
 }

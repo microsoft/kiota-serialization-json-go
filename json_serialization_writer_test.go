@@ -176,14 +176,34 @@ func TestWriteMultipleTypes(t *testing.T) {
 
 func TestWriteInvalidAdditionalData(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
-	type Invalid string
-	var value Invalid = "value"
+	value := "value"
+	serializer.WriteStringValue("key", &value)
+
 	adlData := map[string]interface{}{
-		"key": value,
+		//"add1": "string",
+		"pointer_node":      &JsonParseNode{},
+		"none_pointer_node": JsonParseNode{},
+		"map_value": map[string]interface{}{
+			"name":   "michael",
+			"age":    "27",
+			"gender": "undefined",
+		},
 	}
 	err := serializer.WriteAdditionalData(adlData)
-	expErr := fmt.Sprintf("unsupported AdditionalData type: %T", value)
-	assert.EqualErrorf(t, err, expErr, "Error should be: %v, got: %v", expErr, err)
+	assert.Nil(t, err)
+	result, err := serializer.GetSerializedContent()
+
+	stringResult := string(result[:])
+	assert.Contains(t, stringResult, "\"pointer_node\":")
+	assert.Contains(t, stringResult, "\"none_pointer_node\":{}")
+	assert.Contains(t, stringResult, "\"name\":\"michael\"")
+	assert.True(t, IsJSON("{"+stringResult+"}"))
+}
+
+func IsJSON(str string) bool {
+	var js json.RawMessage
+	err := json.Unmarshal([]byte(str), &js)
+	return err == nil
 }
 
 func TestEscapesNewLinesInStrings(t *testing.T) {
