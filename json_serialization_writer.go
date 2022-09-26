@@ -609,8 +609,8 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 	return []byte(resultStr), nil
 }
 
-// WriteAnyValues an unknown value as a parameter.
-func (w *JsonSerializationWriter) WriteAnyValues(key string, value interface{}) error {
+// WriteAnyValue an unknown value as a parameter.
+func (w *JsonSerializationWriter) WriteAnyValue(key string, value interface{}) error {
 
 	if value != nil {
 		body, err := json.Marshal(value)
@@ -719,7 +719,7 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 			case absser.DateOnly:
 				err = w.WriteDateOnlyValue(key, &value)
 			default:
-				err = w.WriteAnyValues(key, &value)
+				err = w.WriteAnyValue(key, &value)
 			}
 		}
 	}
