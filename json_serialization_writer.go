@@ -2,7 +2,7 @@ package jsonserialization
 
 import (
 	"encoding/base64"
-	"fmt"
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
@@ -609,6 +609,27 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 	return []byte(resultStr), nil
 }
 
+// WriteAnyValues an unknown value as a parameter.
+func (w *JsonSerializationWriter) WriteAnyValues(key string, value interface{}) error {
+
+	if value != nil {
+		body, err := json.Marshal(value)
+		if err != nil {
+			return err
+		}
+		if key != "" {
+			w.writePropertyName(key)
+		}
+
+		w.writeRawValue(string(body))
+
+		if key != "" {
+			w.writePropertySeparator()
+		}
+	}
+	return nil
+}
+
 // WriteAdditionalData writes additional data to underlying the byte array.
 func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface{}) error {
 	var err error
@@ -698,7 +719,7 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 			case absser.DateOnly:
 				err = w.WriteDateOnlyValue(key, &value)
 			default:
-				return fmt.Errorf("unsupported AdditionalData type: %T", value)
+				err = w.WriteAnyValues(key, &value)
 			}
 		}
 	}
