@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.7.2] - 2022-09-29
+
+### Changed
+
+- Fix: Bug on GetRawValue results to invalid memory address when server responds with a `null` on the request body field.
+
 ## [0.7.1] - 2022-09-26
 
 ### Changed
