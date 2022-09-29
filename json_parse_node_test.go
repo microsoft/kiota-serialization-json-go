@@ -1,6 +1,7 @@
 package jsonserialization
 
 import (
+	"github.com/stretchr/testify/require"
 	testing "testing"
 
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -56,6 +57,26 @@ func TestTree(t *testing.T) {
 	}
 }
 
+func TestGetRawValue(t *testing.T) {
+	source := `{
+				"id": "2",
+				"status": 200,
+				"item": null
+		  }`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	someProp, err := parseNode.GetChildNode("item")
+	value, err := someProp.GetRawValue()
+	require.NoError(t, err)
+	assert.Nil(t, value)
+
+	someProp, err = parseNode.GetChildNode("status")
+	value, err = someProp.GetRawValue()
+	assert.Equal(t, float64(200), *value.(*float64))
+}
 func TestJsonParseNodeHonoursInterface(t *testing.T) {
 	instance := &JsonParseNode{}
 	assert.Implements(t, (*absser.ParseNode)(nil), instance)
