@@ -481,5 +481,8 @@ func (n *JsonParseNode) GetByteArrayValue() ([]byte, error) {
 
 // GetRawValue returns a ByteArray value from the nodes.
 func (n *JsonParseNode) GetRawValue() (interface{}, error) {
+	if n == nil || n.value == nil {
+		return nil, nil
+	}
 	return n.value, nil
 }
