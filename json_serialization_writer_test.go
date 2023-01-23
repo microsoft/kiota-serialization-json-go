@@ -3,6 +3,7 @@ package jsonserialization
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/microsoft/kiota-serialization-json-go/internal"
 	"testing"
 	"time"
 
@@ -246,6 +247,56 @@ func TestEscapeTabAndCarriageReturnInStrings(t *testing.T) {
 	assert.NoError(t, err)
 	converted := string(result)
 	assert.Equal(t, expected, converted)
+}
+
+func TestJsonSerializationWriter_WriteNullValue(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+
+	err := serializer.WriteNullValue("name")
+	assert.NoError(t, err)
+	result, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	converted := string(result)
+
+	assert.Equal(t, "\"name\":null", converted)
+}
+
+func TestJsonSerializationWriter(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	countBefore := 0
+	onBefore := func(parsable absser.Parsable) {
+		countBefore++
+	}
+	err := serializer.SetOnBeforeSerialization(onBefore)
+	assert.NoError(t, err)
+
+	countAfter := 0
+	onAfter := func(parsable absser.Parsable) {
+		countAfter++
+	}
+	err = serializer.SetOnAfterObjectSerialization(onAfter)
+	assert.NoError(t, err)
+
+	countStart := 0
+	onStart := func(absser.Parsable, absser.SerializationWriter) error {
+		countStart++
+		return nil
+	}
+
+	err = serializer.SetOnStartObjectSerialization(onStart)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 0, countBefore)
+	assert.Equal(t, 0, countAfter)
+	assert.Equal(t, 0, countStart)
+
+	test := internal.NewTestEntity()
+	err = serializer.WriteObjectValue("name", test)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, countBefore)
+	assert.Equal(t, 1, countAfter)
+	assert.Equal(t, 1, countStart)
 }
 
 type TestStruct struct {
