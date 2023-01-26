@@ -11,12 +11,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
 // JsonParseNode is a ParseNode implementation for JSON.
 type JsonParseNode struct {
-	value interface{}
+	value                     interface{}
+	onBeforeAssignFieldValues absser.ParsableAction
+	onAfterAssignFieldValues  absser.ParsableAction
 }
 
 // NewJsonParseNode creates a new JsonParseNode.
@@ -152,7 +155,20 @@ func (n *JsonParseNode) GetChildNode(index string) (absser.ParseNode, error) {
 	if !ok || len(childNodes) == 0 {
 		return nil, nil
 	}
-	return childNodes[index], nil
+
+	childNode := childNodes[index]
+	if childNode != nil {
+		err := childNode.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
+		if err != nil {
+			return nil, err
+		}
+		err = childNode.SetOnAfterAssignFieldValues(n.GetOnAfterAssignFieldValues())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return childNode, nil
 }
 
 // GetObjectValue returns the Parsable value from the node.
@@ -167,7 +183,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	if err != nil {
 		return nil, err
 	}
-	//TODO on before when implementing backing store
+	abstractions.InvokeParsableAction(n.GetOnBeforeAssignFieldValues(), result)
 	properties, ok := n.value.(map[string]*JsonParseNode)
 	fields := result.GetFieldDeserializers()
 	if ok && len(properties) != 0 {
@@ -183,6 +199,16 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 
 		for key, value := range properties {
 			field := fields[key]
+			if value != nil {
+				err := value.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
+				if err != nil {
+					return nil, err
+				}
+				err = value.SetOnAfterAssignFieldValues(n.GetOnAfterAssignFieldValues())
+				if err != nil {
+					return nil, err
+				}
+			}
 			if field == nil {
 				if value != nil && isHolder {
 					rawValue, err := value.GetRawValue()
@@ -199,7 +225,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 			}
 		}
 	}
-	//TODO on after when implementing backing store
+	abstractions.InvokeParsableAction(n.GetOnAfterAssignFieldValues(), result)
 	return result, nil
 }
 
@@ -485,4 +511,22 @@ func (n *JsonParseNode) GetRawValue() (interface{}, error) {
 		return nil, nil
 	}
 	return n.value, nil
+}
+
+func (n *JsonParseNode) GetOnBeforeAssignFieldValues() absser.ParsableAction {
+	return n.onBeforeAssignFieldValues
+}
+
+func (n *JsonParseNode) SetOnBeforeAssignFieldValues(action absser.ParsableAction) error {
+	n.onBeforeAssignFieldValues = action
+	return nil
+}
+
+func (n *JsonParseNode) GetOnAfterAssignFieldValues() absser.ParsableAction {
+	return n.onAfterAssignFieldValues
+}
+
+func (n *JsonParseNode) SetOnAfterAssignFieldValues(action absser.ParsableAction) error {
+	n.onAfterAssignFieldValues = action
+	return nil
 }
