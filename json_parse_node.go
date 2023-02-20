@@ -510,7 +510,22 @@ func (n *JsonParseNode) GetRawValue() (interface{}, error) {
 	if n == nil || n.value == nil {
 		return nil, nil
 	}
-	return n.value, nil
+	switch v := n.value.(type) {
+	case *JsonParseNode:
+		return v.GetRawValue()
+	case []*JsonParseNode:
+		result := make([]interface{}, len(v))
+		for i, x := range v {
+			val, err := x.GetRawValue()
+			if err != nil {
+				return nil, err
+			}
+			result[i] = val
+		}
+		return result, nil
+	default:
+		return n.value, nil
+	}
 }
 
 func (n *JsonParseNode) GetOnBeforeAssignFieldValues() absser.ParsableAction {
