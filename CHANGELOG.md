@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.8.1] - 2023-02-20
+
+### Added
+
+- Fixes bug that returned `JsonParseNode` as value for collections when `GetRawValue` is called.
+
 ## [0.8.0] - 2023-01-23
 
 ### Added

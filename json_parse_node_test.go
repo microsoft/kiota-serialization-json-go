@@ -61,7 +61,8 @@ func TestGetRawValue(t *testing.T) {
 	source := `{
 				"id": "2",
 				"status": 200,
-				"item": null
+				"item": null,
+				"phones": [1,2,3]
 		  }`
 	sourceArray := []byte(source)
 	parseNode, err := NewJsonParseNode(sourceArray)
@@ -76,7 +77,22 @@ func TestGetRawValue(t *testing.T) {
 	someProp, err = parseNode.GetChildNode("status")
 	value, err = someProp.GetRawValue()
 	assert.Equal(t, float64(200), *value.(*float64))
+
+	someProp, err = parseNode.GetChildNode("phones")
+	value, err = someProp.GetRawValue()
+
+	var expected []interface{}
+	expected = append(expected, ref(float64(1)))
+	expected = append(expected, ref(float64(2)))
+	expected = append(expected, ref(float64(3)))
+
+	assert.Equal(t, expected, value)
 }
+
+func ref[T interface{}](t T) *T {
+	return &t
+}
+
 func TestJsonParseNodeHonoursInterface(t *testing.T) {
 	instance := &JsonParseNode{}
 	assert.Implements(t, (*absser.ParseNode)(nil), instance)
