@@ -89,6 +89,37 @@ func TestGetRawValue(t *testing.T) {
 	assert.Equal(t, expected, value)
 }
 
+func TestNestedGetRawValue(t *testing.T) {
+	source := `{
+				"id": "2",
+				"status": 200,
+				"item": null,
+				"phones": [1,2,3],
+				"passwordCredentials": [
+					{
+						"endDateTime": "2023-07-11T14:18:14.946Z",
+						"keyId": "f92ec133-34aa-49e9-b078-9f0b247d8059"
+					}
+				]
+		  }`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	someProp, err := parseNode.GetChildNode("passwordCredentials")
+	value, err := someProp.GetRawValue()
+	require.NoError(t, err)
+
+	var expected []interface{}
+	e := make(map[string]interface{})
+	e["endDateTime"] = ref("2023-07-11T14:18:14.946Z")
+	e["keyId"] = ref("f92ec133-34aa-49e9-b078-9f0b247d8059")
+	expected = append(expected, e)
+
+	assert.Equal(t, expected, value)
+}
+
 func ref[T interface{}](t T) *T {
 	return &t
 }

@@ -523,6 +523,16 @@ func (n *JsonParseNode) GetRawValue() (interface{}, error) {
 			result[i] = val
 		}
 		return result, nil
+	case map[string]*JsonParseNode:
+		m := make(map[string]interface{})
+		for key, element := range v {
+			elementVal, err := element.GetRawValue()
+			if err != nil {
+				return nil, err
+			}
+			m[key] = elementVal
+		}
+		return m, nil
 	default:
 		return n.value, nil
 	}
