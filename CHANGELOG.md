@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.8.2] - 2023-03-01
+
+### Added
+
+- Fixes bug that returned `JsonParseNode` as value for nested maps when `GetRawValue` is called.
+
 ## [0.8.1] - 2023-02-20
 
 ### Added
