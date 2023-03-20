@@ -9,7 +9,7 @@ import (
 
 // Unmarshal parses JSON-encoded data using a ParsableFactory and stores it in the value pointed to by model.
 func Unmarshal[T absser.Parsable](data []byte, model *T, parser absser.ParsableFactory) error {
-	jpn, err := NewJsonParseNode(data)
+	jpn, err := absser.DefaultParseNodeFactoryInstance.GetRootParseNode("application/json", data)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,11 @@ func Marshal(v absser.Parsable) ([]byte, error) {
 		return []byte("null"), nil
 	}
 
-	serializer := NewJsonSerializationWriter()
+	serializer, err := absser.DefaultSerializationWriterFactoryInstance.GetSerializationWriter("application/json")
+	if err != nil {
+		return nil, err
+	}
+
 	defer serializer.Close()
 
 	if err := v.Serialize(serializer); err != nil {

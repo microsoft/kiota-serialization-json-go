@@ -9,6 +9,8 @@ import (
 )
 
 func TestUnmarshal(t *testing.T) {
+	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+
 	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
 	sourceArray := []byte(source)
 
@@ -29,6 +31,8 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestUnmarshalFromNull(t *testing.T) {
+	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+
 	sourceArray := []byte("null")
 
 	result := internal.NewIntersectionTypeMock()
@@ -38,6 +42,8 @@ func TestUnmarshalFromNull(t *testing.T) {
 }
 
 func TestUnmarshalWithError(t *testing.T) {
+	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+
 	sourceArray := []byte("}")
 
 	result := internal.NewIntersectionTypeMock()
@@ -46,6 +52,9 @@ func TestUnmarshalWithError(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
+	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+	absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonSerializationWriterFactory()
+
 	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
 	sourceArray := []byte(source)
 
@@ -62,6 +71,8 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestMarshalToNull(t *testing.T) {
+	absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonSerializationWriterFactory()
+
 	b, err := Marshal(nil)
 	assert.NoError(t, err)
 	assert.JSONEq(t, "null", string(b))
