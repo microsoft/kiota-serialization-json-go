@@ -7,11 +7,14 @@ import (
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
-// Unmarshal parses JSON-encoded data using a ParsableFactory and stores it in the value pointed to by model.
+// Unmarshal parses JSON-encoded data using a ParsableFactory and stores it in the value pointed to by model. To
+// enable dirty tracking and better performance, set the DefaultParseNodeFactoryInstance for "application/json".
 func Unmarshal[T absser.Parsable](data []byte, model *T, parser absser.ParsableFactory) error {
 	jpn, err := absser.DefaultParseNodeFactoryInstance.GetRootParseNode("application/json", data)
 	if err != nil {
-		return err
+		if jpn, err = NewJsonParseNode(data); err != nil {
+			return err
+		}
 	}
 
 	v, err := jpn.GetObjectValue(parser)
@@ -29,7 +32,8 @@ func Unmarshal[T absser.Parsable](data []byte, model *T, parser absser.ParsableF
 	return nil
 }
 
-// Marshal JSON-encodes a Parsable value.
+// Marshal JSON-encodes a Parsable value. To enable dirty tracking and better performance, set the
+// DefaultSerializationWriterFactoryInstance for "application/json".
 func Marshal(v absser.Parsable) ([]byte, error) {
 	if vRef := reflect.ValueOf(v); !vRef.IsValid() || vRef.IsNil() {
 		return []byte("null"), nil
@@ -37,7 +41,7 @@ func Marshal(v absser.Parsable) ([]byte, error) {
 
 	serializer, err := absser.DefaultSerializationWriterFactoryInstance.GetSerializationWriter("application/json")
 	if err != nil {
-		return nil, err
+		serializer = NewJsonSerializationWriter()
 	}
 
 	defer serializer.Close()

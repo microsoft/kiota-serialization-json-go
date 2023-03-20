@@ -9,30 +9,43 @@ import (
 )
 
 func TestUnmarshal(t *testing.T) {
-	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
-
-	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
-	sourceArray := []byte(source)
-
-	result := internal.NewIntersectionTypeMock()
-	err := Unmarshal(sourceArray, &result, internal.CreateIntersectionTypeMockFromDiscriminator)
-
-	if err != nil {
-		t.Error(err)
+	testCases := []struct {
+		name       string
+		useDefault bool
+	}{
+		{name: "uses default ParseNode", useDefault: true},
+		{name: "uses fallback", useDefault: false},
 	}
 
-	assert.NotNil(t, result)
-	assert.NotNil(t, result.GetComposedType1())
-	assert.NotNil(t, result.GetComposedType2())
-	assert.Nil(t, result.GetStringValue())
-	assert.Nil(t, result.GetComposedType3())
-	assert.Equal(t, "McGill", *result.GetComposedType2().GetDisplayName())
-	assert.Equal(t, "opaque", *result.GetComposedType1().GetId())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.useDefault {
+				absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+				defer delete(absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories, "application/json")
+			}
+
+			source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
+			sourceArray := []byte(source)
+
+			result := internal.NewIntersectionTypeMock()
+			err := Unmarshal(sourceArray, &result, internal.CreateIntersectionTypeMockFromDiscriminator)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			assert.NotNil(t, result)
+			assert.NotNil(t, result.GetComposedType1())
+			assert.NotNil(t, result.GetComposedType2())
+			assert.Nil(t, result.GetStringValue())
+			assert.Nil(t, result.GetComposedType3())
+			assert.Equal(t, "McGill", *result.GetComposedType2().GetDisplayName())
+			assert.Equal(t, "opaque", *result.GetComposedType1().GetId())
+		})
+	}
 }
 
 func TestUnmarshalFromNull(t *testing.T) {
-	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
-
 	sourceArray := []byte("null")
 
 	result := internal.NewIntersectionTypeMock()
@@ -42,8 +55,6 @@ func TestUnmarshalFromNull(t *testing.T) {
 }
 
 func TestUnmarshalWithError(t *testing.T) {
-	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
-
 	sourceArray := []byte("}")
 
 	result := internal.NewIntersectionTypeMock()
@@ -52,27 +63,41 @@ func TestUnmarshalWithError(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
-	absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
-	absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonSerializationWriterFactory()
-
-	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
-	sourceArray := []byte(source)
-
-	result := internal.NewIntersectionTypeMock()
-	err := Unmarshal(sourceArray, &result, internal.CreateIntersectionTypeMockFromDiscriminator)
-
-	if err != nil {
-		t.Error(err)
+	testCases := []struct {
+		name       string
+		useDefault bool
+	}{
+		{name: "uses default ParseNodeFactory", useDefault: true},
+		{name: "uses fallback", useDefault: false},
 	}
 
-	b, err := Marshal(result)
-	assert.NoError(t, err)
-	assert.JSONEq(t, source, string(b))
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.useDefault {
+				absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonParseNodeFactory()
+				defer delete(absser.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories, "application/json")
+				absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonSerializationWriterFactory()
+				defer delete(absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories, "application/json")
+			}
+
+			source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"opaque\"}"
+			sourceArray := []byte(source)
+
+			result := internal.NewIntersectionTypeMock()
+			err := Unmarshal(sourceArray, &result, internal.CreateIntersectionTypeMockFromDiscriminator)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			b, err := Marshal(result)
+			assert.NoError(t, err)
+			assert.JSONEq(t, source, string(b))
+		})
+	}
 }
 
 func TestMarshalToNull(t *testing.T) {
-	absser.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = NewJsonSerializationWriterFactory()
-
 	b, err := Marshal(nil)
 	assert.NoError(t, err)
 	assert.JSONEq(t, "null", string(b))
