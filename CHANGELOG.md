@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
 ### Changed
+
+### Added
+
+## [0.8.3] - 2023-03-20
+
+### Added
+
+- Validates json content before parsing.
 
 ## [0.8.2] - 2023-03-01
 

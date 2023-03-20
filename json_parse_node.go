@@ -27,6 +27,9 @@ func NewJsonParseNode(content []byte) (*JsonParseNode, error) {
 	if len(content) == 0 {
 		return nil, errors.New("content is empty")
 	}
+	if !json.Valid(content) {
+		return nil, errors.New("invalid json type")
+	}
 	decoder := json.NewDecoder(bytes.NewReader(content))
 	value, err := loadJsonTree(decoder)
 	return value, err
