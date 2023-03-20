@@ -12,3 +12,12 @@ func TestJsonParseNodeFactoryHonoursInterface(t *testing.T) {
 	instance := NewJsonParseNodeFactory()
 	assert.Implements(t, (*absser.ParseNodeFactory)(nil), instance)
 }
+
+func TestInvalidContentShouldFail(t *testing.T) {
+	source := "3 [ }"
+	sourceArray := []byte(source)
+
+	parseNode, err := NewJsonParseNode(sourceArray)
+	assert.Error(t, err)
+	assert.Nil(t, parseNode)
+}
