@@ -140,6 +140,24 @@ func TestFunctional(t *testing.T) {
 	}
 }
 
+func TestThrowErrorOfPrimitiveType(t *testing.T) {
+	source := `{
+				"id": "2",
+				"status": 200,
+				"item": null,
+				"phones": [1,2,3]
+		  }`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+
+	someProp, err := parseNode.GetChildNode("phones")
+	_, err = someProp.GetCollectionOfPrimitiveValues("wrong.UUID")
+	assert.Equal(t, "targetType wrong.UUID is not supported", err.Error())
+}
+
 const FunctionalTestSource = "{" +
 	"\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#users('vincent%40biret365.onmicrosoft.com')/messages\"," +
 	"\"@odata.nextLink\": \"https://graph.microsoft.com/v1.0/users/vincent@biret365.onmicrosoft.com/messages?$skip=10\"," +
