@@ -7,10 +7,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"time"
 
-	"github.com/google/uuid"
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
@@ -308,7 +309,7 @@ func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error
 	case "base64":
 		return n.GetByteArrayValue()
 	default:
-		return nil, errors.New("targetType is not supported")
+		return nil, fmt.Errorf("targetType %s is not supported", targetType)
 	}
 }
 
