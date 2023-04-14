@@ -3,9 +3,10 @@ package jsonserialization
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/microsoft/kiota-serialization-json-go/internal"
 	"testing"
 	"time"
+
+	"github.com/microsoft/kiota-serialization-json-go/internal"
 
 	assert "github.com/stretchr/testify/assert"
 
@@ -108,7 +109,7 @@ func TestWriteByteValue(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":%d", value), string(result[:]))
 }
 
-//  ByteArray values are encoded to Base64 when stored
+// ByteArray values are encoded to Base64 when stored
 func TestWriteByteArrayValue(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := []byte("SerialWriter")
@@ -214,6 +215,21 @@ func TestEscapesNewLinesInStrings(t *testing.T) {
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
 	assert.Equal(t, "\"key\":\"value\\nwith\\nnew\\nlines\"", string(result[:]))
+
+	fullPayload := "{" + string(result[:]) + "}"
+	var parsedResult TestStruct
+	parseErr := json.Unmarshal([]byte(fullPayload), &parsedResult)
+	assert.Nil(t, parseErr)
+	assert.Equal(t, value, parsedResult.Key)
+}
+
+func TestPreserveSeparatorsInStrings(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := `{"foo":"bar","biz":"bang"},[1,2,3,],,`
+	serializer.WriteStringValue("key", &value)
+	result, err := serializer.GetSerializedContent()
+	assert.Nil(t, err)
+	assert.Equal(t, `"key":"{\"foo\":\"bar\",\"biz\":\"bang\"},[1,2,3,],,"`, string(result))
 
 	fullPayload := "{" + string(result[:]) + "}"
 	var parsedResult TestStruct
