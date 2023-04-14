@@ -194,6 +194,7 @@ func TestWriteInvalidAdditionalData(t *testing.T) {
 	err := serializer.WriteAdditionalData(adlData)
 	assert.Nil(t, err)
 	result, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
 
 	stringResult := string(result[:])
 	assert.Contains(t, stringResult, "\"pointer_node\":")

@@ -607,22 +607,17 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 
 // GetSerializedContent returns the resulting byte array from the serialization writer.
 func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
-	written := w.writer.Bytes()
-	writtenLen := len(written)
-	trimmed := make([]byte, 0, writtenLen)
+	trimmed := w.writer.Bytes()
+	buffLen := len(trimmed)
 
-	sliceStart := 0
-	for _, idx := range w.separatorIndices {
-		trimmed = append(trimmed, written[sliceStart:idx]...)
-		sliceStart = idx
+	for i := len(w.separatorIndices) - 1; i >= 0; i-- {
+		idx := w.separatorIndices[i]
 
-		if idx == writtenLen-1 || idx < writtenLen-1 && (written[idx+1] == byte(']') || written[idx+1] == byte('}') || written[idx+1] == byte(',')) {
-			sliceStart++
+		if idx == buffLen-1 {
+			trimmed = trimmed[0:idx]
+		} else if trimmed[idx+1] == byte(']') || trimmed[idx+1] == byte('}') {
+			trimmed = append(trimmed[0:idx], trimmed[idx+1:]...)
 		}
-	}
-
-	if sliceStart <= writtenLen-1 {
-		trimmed = append(trimmed, written[sliceStart:]...)
 	}
 
 	return trimmed, nil
