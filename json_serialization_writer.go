@@ -1,6 +1,7 @@
 package jsonserialization
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"strconv"
@@ -15,7 +16,8 @@ import (
 
 // JsonSerializationWriter implements SerializationWriter for JSON.
 type JsonSerializationWriter struct {
-	writer                     []string
+	writer                     *bytes.Buffer
+	separatorIndices           []int
 	onBeforeAssignFieldValues  absser.ParsableAction
 	onAfterAssignFieldValues   absser.ParsableAction
 	onStartObjectSerialization absser.ParsableWriter
@@ -24,39 +26,30 @@ type JsonSerializationWriter struct {
 // NewJsonSerializationWriter creates a new instance of the JsonSerializationWriter.
 func NewJsonSerializationWriter() *JsonSerializationWriter {
 	return &JsonSerializationWriter{
-		writer: make([]string, 0),
+		writer:           new(bytes.Buffer),
+		separatorIndices: make([]int, 0),
 	}
 }
-func (w *JsonSerializationWriter) writeRawValue(value string) {
-	w.writer = append(w.writer, value)
+func (w *JsonSerializationWriter) writeRawValue(value ...string) {
+	for _, v := range value {
+		w.writer.WriteString(v)
+	}
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
+	value = strings.ReplaceAll(value, `\`, `\\`)
+	value = strings.ReplaceAll(value, `"`, `\"`)
+	value = strings.ReplaceAll(value, "\n", `\n`)
+	value = strings.ReplaceAll(value, "\r", `\r`)
+	value = strings.ReplaceAll(value, "\t", `\t`)
 
-	value = strings.ReplaceAll(
-		strings.ReplaceAll(
-			strings.ReplaceAll(value,
-				"\\", "\\\\",
-			),
-			"\"",
-			"\\\""),
-		"\n",
-		"\\n")
-	value = strings.ReplaceAll(strings.ReplaceAll(value, "\t", "\\t"), "\r", "\\r")
-	w.writeRawValue("\"" + value + "\"")
+	w.writeRawValue("\"", value, "\"")
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {
-	w.writeRawValue("\"" + key + "\":")
+	w.writeRawValue("\"", key, "\":")
 }
 func (w *JsonSerializationWriter) writePropertySeparator() {
+	w.separatorIndices = append(w.separatorIndices, w.writer.Len())
 	w.writeRawValue(",")
-}
-func (w *JsonSerializationWriter) trimLastPropertySeparator() {
-	for idx, s := range w.writer {
-		writerLen := len(w.writer)
-		if s == "," && (idx == writerLen-1 || (idx < writerLen-1 && (w.writer[idx+1] == "]" || w.writer[idx+1] == "}" || w.writer[idx+1] == ","))) {
-			w.writer[idx] = ""
-		}
-	}
 }
 func (w *JsonSerializationWriter) writeArrayStart() {
 	w.writeRawValue("[")
@@ -614,14 +607,24 @@ func (w *JsonSerializationWriter) WriteCollectionOfInt8Values(key string, collec
 
 // GetSerializedContent returns the resulting byte array from the serialization writer.
 func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
-	w.trimLastPropertySeparator()
-	resultStr := strings.Join(w.writer, "")
-	return []byte(resultStr), nil
+	trimmed := w.writer.Bytes()
+	buffLen := len(trimmed)
+
+	for i := len(w.separatorIndices) - 1; i >= 0; i-- {
+		idx := w.separatorIndices[i]
+
+		if idx == buffLen-1 {
+			trimmed = trimmed[0:idx]
+		} else if trimmed[idx+1] == byte(']') || trimmed[idx+1] == byte('}') {
+			trimmed = append(trimmed[0:idx], trimmed[idx+1:]...)
+		}
+	}
+
+	return trimmed, nil
 }
 
 // WriteAnyValue an unknown value as a parameter.
 func (w *JsonSerializationWriter) WriteAnyValue(key string, value interface{}) error {
-
 	if value != nil {
 		body, err := json.Marshal(value)
 		if err != nil {
@@ -779,6 +782,7 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 
 // Close clears the internal buffer.
 func (w *JsonSerializationWriter) Close() error {
-	w.writer = make([]string, 0)
+	w.writer = new(bytes.Buffer)
+	w.separatorIndices = make([]int, 0)
 	return nil
 }
