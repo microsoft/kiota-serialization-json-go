@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 
+## [0.9.3] - 2023-04-24
+
+### Changed
+
+- Use buffer pool for `JsonSerializationWriter`.
+
 ## [0.9.2] - 2023-04-17
 
 ### Changed

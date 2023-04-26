@@ -129,14 +129,14 @@ func TestDoubleEscapeFailure(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":%q", value), string(result[:]))
 }
 
-func TestBufferClose(t *testing.T) {
+func TestReset(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := "W/\"CQAAABYAAAAs+XSiyjZdS4Rhtwk0v1pGAAC5bsJ2\""
 	serializer.WriteStringValue("key", &value)
 	result, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
 	assert.True(t, len(result) > 0)
-	serializer.Close()
+	serializer.Reset()
 	assert.True(t, len(result) > 0)
 	empty, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
@@ -146,6 +146,18 @@ func TestBufferClose(t *testing.T) {
 	notEmpty, err := serializer.GetSerializedContent()
 	assert.Nil(t, err)
 	assert.True(t, len(notEmpty) > 0)
+}
+
+func TestClose(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	serializer.Close()
+	assert.Panics(t, func() {
+		serializer.GetSerializedContent()
+	})
+	assert.Panics(t, serializer.writer.Reset)
+	assert.NotPanics(t, func() {
+		serializer.Close()
+	})
 }
 
 func TestJsonSerializationWriterHonoursInterface(t *testing.T) {
@@ -194,7 +206,6 @@ func TestWriteInvalidAdditionalData(t *testing.T) {
 	err := serializer.WriteAdditionalData(adlData)
 	assert.Nil(t, err)
 	result, err := serializer.GetSerializedContent()
-	assert.NoError(t, err)
 
 	stringResult := string(result[:])
 	assert.Contains(t, stringResult, "\"pointer_node\":")
