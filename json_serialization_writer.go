@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -636,7 +637,7 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 		}
 	}
 
-	return trimmed, nil
+	return slices.Clone(trimmed), nil
 }
 
 // WriteAnyValue an unknown value as a parameter.
