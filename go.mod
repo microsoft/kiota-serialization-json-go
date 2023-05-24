@@ -6,7 +6,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/microsoft/kiota-abstractions-go v1.0.0
 	github.com/stretchr/testify v1.8.3
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
 require (
