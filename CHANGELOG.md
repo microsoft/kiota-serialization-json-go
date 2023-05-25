@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixes bug where slices backing data from `GetSerializedContent` could be overwritten before they were used but after `JsonSerializationWriter.Close()` was called.
+
 ### Added
 
 ## [1.0.0] - 2023-05-04

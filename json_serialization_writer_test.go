@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/kiota-serialization-json-go/internal"
 
 	assert "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
@@ -275,6 +276,35 @@ func TestEscapeTabAndCarriageReturnInStrings(t *testing.T) {
 	assert.NoError(t, err)
 	converted := string(result)
 	assert.Equal(t, expected, converted)
+}
+
+func TestWriteValuesConcurrently(t *testing.T) {
+	instances := 100
+	output := make([][]byte, instances)
+
+	// Use a separate function so we can just defer close the serialization
+	// writer.
+	serializer := func(idx int) {
+		value := int64(idx)
+
+		serializer := NewJsonSerializationWriter()
+		defer serializer.Close()
+
+		serializer.WriteInt64Value("key", &value)
+
+		result, err := serializer.GetSerializedContent()
+		require.NoError(t, err)
+
+		output[idx] = result
+	}
+
+	for i := 0; i < instances; i++ {
+		serializer(i)
+	}
+
+	for i := 0; i < instances; i++ {
+		assert.Equal(t, fmt.Sprintf("\"key\":%d", i), string(output[i]))
+	}
 }
 
 func TestJsonSerializationWriter_WriteNullValue(t *testing.T) {

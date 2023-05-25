@@ -636,7 +636,10 @@ func (w *JsonSerializationWriter) GetSerializedContent() ([]byte, error) {
 		}
 	}
 
-	return trimmed, nil
+	trimmedCopy := make([]byte, len(trimmed))
+	copy(trimmedCopy, trimmed)
+
+	return trimmedCopy, nil
 }
 
 // WriteAnyValue an unknown value as a parameter.
