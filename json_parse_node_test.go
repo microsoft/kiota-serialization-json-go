@@ -1,11 +1,12 @@
 package jsonserialization
 
 import (
+	"github.com/microsoft/kiota-serialization-json-go/internal"
 	"github.com/stretchr/testify/require"
-	testing "testing"
+	"testing"
 
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
-	assert "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTree(t *testing.T) {
@@ -118,6 +119,44 @@ func TestNestedGetRawValue(t *testing.T) {
 	expected = append(expected, e)
 
 	assert.Equal(t, expected, value)
+}
+
+func TestNilValuesInCollections(t *testing.T) {
+	source := `{
+				"id": "2",
+				"status": 200,
+				"item": null,
+				"phones": [1,2, null,3],
+				"testEntities": [
+					{
+						"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
+						"officeLocation": "Nairobi"
+					},
+					null,
+					{
+						"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
+						"officeLocation": "Nairobi"
+					}
+				]
+		  }`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	someProp, err := parseNode.GetChildNode("testEntities")
+	require.NoError(t, err)
+	value, err := someProp.GetCollectionOfObjectValues(internal.TestEntityDiscriminator)
+	require.NoError(t, err)
+	assert.Equal(t, "Nairobi", *(value[0].(*internal.TestEntity)).GetOfficeLocation())
+	assert.Nil(t, value[1])
+
+	phoneProp, err := parseNode.GetChildNode("phones")
+	require.NoError(t, err)
+	phonesValue, err := phoneProp.GetCollectionOfPrimitiveValues("int32")
+	require.NoError(t, err)
+	assert.Equal(t, int32(1), *(phonesValue[0].(*int32)))
+	assert.Equal(t, nil, phonesValue[2])
 }
 
 func ref[T interface{}](t T) *T {
