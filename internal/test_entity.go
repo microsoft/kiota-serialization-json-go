@@ -37,6 +37,10 @@ type TestEntityable interface {
 	SetCreatedDateTime(value *time.Time)
 }
 
+func TestEntityDiscriminator(absser.ParseNode) (absser.Parsable, error) {
+	return NewTestEntity(), nil
+}
+
 func NewTestEntity() *TestEntity {
 	return &TestEntity{
 		additionalData: make(map[string]interface{}),
