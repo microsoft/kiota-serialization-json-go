@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.0.3] - 2023-06-28
+
+### Changed
+
+- Fixes serialization of composed types for scalar values.
+
 ## [1.0.2] - 2023-06-14
 
 - Safely serialize null values in collections of Objects, Enums or primitives.
