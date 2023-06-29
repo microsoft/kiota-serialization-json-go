@@ -112,3 +112,7 @@ func (e *UnionTypeMock) Serialize(writer absser.SerializationWriter) error {
 	}
 	return nil
 }
+
+func (e *UnionTypeMock) GetIsComposedType() bool {
+	return true
+}

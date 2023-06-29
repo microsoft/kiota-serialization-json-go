@@ -102,7 +102,7 @@ func TestItSerializesUnionTypeStringValue(t *testing.T) {
 	source := internal.NewUnionTypeMock()
 	source.SetStringValue(&value)
 	writer := NewJsonSerializationWriter()
-	err := source.Serialize(writer)
+	err := writer.WriteObjectValue("", source)
 	if err != nil {
 		t.Error(err)
 	}
@@ -129,7 +129,7 @@ func TestItSerializesUnionTypeComplexProperty1(t *testing.T) {
 	source.SetComposedType1(prop1Value)
 	source.SetComposedType2(prop2Value)
 	writer := NewJsonSerializationWriter()
-	err := source.Serialize(writer)
+	err := writer.WriteObjectValue("", source)
 	if err != nil {
 		t.Error(err)
 	}
@@ -150,7 +150,7 @@ func TestItSerializesUnionTypeComplexProperty2(t *testing.T) {
 	prop2Value.SetDisplayName(&displayNameValue)
 	source.SetComposedType2(prop2Value)
 	writer := NewJsonSerializationWriter()
-	err := source.Serialize(writer)
+	err := writer.WriteObjectValue("", source)
 	if err != nil {
 		t.Error(err)
 	}
@@ -176,7 +176,7 @@ func TestItSerializesUnionTypeComplexProperty3(t *testing.T) {
 	prop3Value2.SetOfficeLocation(&officeLocationValue2)
 	source.SetComposedType3([]internal.TestEntityable{prop3Value1, prop3Value2})
 	writer := NewJsonSerializationWriter()
-	err := source.Serialize(writer)
+	err := writer.WriteObjectValue("", source)
 	if err != nil {
 		t.Error(err)
 	}

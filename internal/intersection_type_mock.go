@@ -92,3 +92,6 @@ func (e *IntersectionTypeMock) Serialize(writer absser.SerializationWriter) erro
 		return writer.WriteObjectValue("", e.GetComposedType1(), e.GetComposedType2())
 	}
 }
+func (e *IntersectionTypeMock) GetIsComposedType() bool {
+	return true
+}
