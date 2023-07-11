@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"io"
+	"strconv"
 	"time"
 
 	abstractions "github.com/microsoft/kiota-abstractions-go"
@@ -225,6 +226,42 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				err := field(value)
 				if err != nil {
 					return nil, err
+				}
+			}
+		}
+	}
+
+	if !ok {
+		// try cast to JsonParseNode array and read each value
+		nodes, okArray := n.value.([]*JsonParseNode)
+		if okArray {
+			itemAsHolder, isHolder := result.(absser.AdditionalDataHolder)
+			var itemAdditionalData map[string]interface{}
+			if isHolder {
+				itemAdditionalData = itemAsHolder.GetAdditionalData()
+				if itemAdditionalData == nil {
+					itemAdditionalData = make(map[string]interface{})
+					itemAsHolder.SetAdditionalData(itemAdditionalData)
+				}
+			}
+
+			for i, v := range nodes {
+				if v != nil {
+					err := v.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
+					if err != nil {
+						return nil, err
+					}
+					err = v.SetOnAfterAssignFieldValues(n.GetOnAfterAssignFieldValues())
+					if err != nil {
+						return nil, err
+					}
+				}
+				if v != nil && isHolder {
+					rawValue, err := v.GetRawValue()
+					if err != nil {
+						return nil, err
+					}
+					itemAdditionalData[strconv.Itoa(i)] = rawValue
 				}
 			}
 		}
