@@ -235,15 +235,13 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	if !ok {
 		// try cast to JsonParseNode array and read each value
 		nodes, okArray := n.value.([]*JsonParseNode)
-		if okArray {
-			itemAsHolder, isHolder := result.(absser.AdditionalDataHolder)
+		itemAsHolder, isHolder := result.(absser.AdditionalDataHolder)
+		if okArray && isHolder {
 			var itemAdditionalData map[string]interface{}
-			if isHolder {
-				itemAdditionalData = itemAsHolder.GetAdditionalData()
-				if itemAdditionalData == nil {
-					itemAdditionalData = make(map[string]interface{})
-					itemAsHolder.SetAdditionalData(itemAdditionalData)
-				}
+			itemAdditionalData = itemAsHolder.GetAdditionalData()
+			if itemAdditionalData == nil {
+				itemAdditionalData = make(map[string]interface{})
+				itemAsHolder.SetAdditionalData(itemAdditionalData)
 			}
 
 			arrayValues := make([]interface{}, len(nodes))
