@@ -10,12 +10,13 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"io"
-	"strconv"
 	"time"
 
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 )
+
+const ArraysAdditionalData = "ArraysAdditionalData"
 
 // JsonParseNode is a ParseNode implementation for JSON.
 type JsonParseNode struct {
@@ -245,6 +246,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				}
 			}
 
+			arrayValues := make([]interface{}, len(nodes))
 			for i, v := range nodes {
 				if v != nil {
 					err := v.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
@@ -256,18 +258,37 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 						return nil, err
 					}
 				}
+
 				if v != nil && isHolder {
 					rawValue, err := v.GetRawValue()
 					if err != nil {
 						return nil, err
 					}
-					itemAdditionalData[strconv.Itoa(i)] = rawValue
+					arrayValues[i] = rawValue
 				}
 			}
+			addArrayToAdditionalDataHolder(itemAdditionalData, arrayValues)
 		}
 	}
 	abstractions.InvokeParsableAction(n.GetOnAfterAssignFieldValues(), result)
 	return result, nil
+}
+
+func addArrayToAdditionalDataHolder(itemAdditionalData map[string]interface{}, values []interface{}) {
+	val, ok := itemAdditionalData[ArraysAdditionalData]
+	// If the key exists
+	if !ok {
+		// create an array and add the values to the array
+		itemAdditionalData[ArraysAdditionalData] = values
+	} else {
+		// If the key exists, but the value is not a slice
+		if _, ok := val.([][]interface{}); !ok {
+			itemAdditionalData[ArraysAdditionalData] = values
+		} else {
+			// If the key exists and the value is a slice
+			itemAdditionalData[ArraysAdditionalData] = append(val.([]interface{}), values...)
+		}
+	}
 }
 
 // GetCollectionOfObjectValues returns the collection of Parsable values from the node.

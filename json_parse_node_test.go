@@ -215,7 +215,15 @@ func TestSerializationOfUnamedMaps(t *testing.T) {
 	someProp, err := parseNode.GetChildNode("values")
 	value, err := someProp.GetObjectValue(internal.CreateJsonFromDiscriminatorValue)
 	jsonValue := value.(*internal.Json)
-	assert.Equal(t, "0", jsonValue.GetAdditionalData())
+	arrayValues := jsonValue.GetAdditionalData()[ArraysAdditionalData].([]interface{})
+	assert.Equal(t, "Name", *arrayValues[0].([]interface{})[0].(*string))
+	assert.Equal(t, "Amount", *arrayValues[0].([]interface{})[1].(*string))
+
+	assert.Equal(t, "Tony", *arrayValues[1].([]interface{})[0].(*string))
+	assert.Equal(t, float64(100), *arrayValues[1].([]interface{})[1].(*float64))
+
+	assert.Equal(t, "John", *arrayValues[2].([]interface{})[0].(*string))
+	assert.Equal(t, float64(200), *arrayValues[2].([]interface{})[1].(*float64))
 }
 
 const FunctionalTestSource = "{" +
