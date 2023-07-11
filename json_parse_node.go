@@ -231,7 +231,6 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 			}
 		}
 	}
-
 	if !ok {
 		// try cast to JsonParseNode array and read each value
 		nodes, okArray := n.value.([]*JsonParseNode)
