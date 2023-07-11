@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.1.0] - 2023-07-11
+
+### Added
+
+- Adds `ArraysAdditionalData` in additional data to hold serialized array or arrays.
+
 ## [1.0.3] - 2023-06-28
 
 ### Changed
