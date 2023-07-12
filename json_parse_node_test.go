@@ -195,7 +195,7 @@ func TestParsingTime(t *testing.T) {
 	assert.Nil(t, err)
 	time1, err := someProp.GetTimeValue()
 	assert.Nil(t, err)
-	assert.Contains(t, time1.String(), "2023-07-12T08:54:24 +")
+	assert.Contains(t, time1.String(), "2023-07-12 08:54:24 +")
 }
 
 func TestThrowErrorOfPrimitiveType(t *testing.T) {
