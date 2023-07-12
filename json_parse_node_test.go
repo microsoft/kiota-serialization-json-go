@@ -182,7 +182,7 @@ func TestFunctional(t *testing.T) {
 func TestParsingTime(t *testing.T) {
 	source := `{
 			"noZone": "2023-07-12T08:54:24",
-			"withZone": "2023-07-12T08:54:24"
+			"withZone": "2023-07-12T09:54:24+03:00"
 	  }`
 
 	sourceArray := []byte(source)
@@ -196,6 +196,12 @@ func TestParsingTime(t *testing.T) {
 	time1, err := someProp.GetTimeValue()
 	assert.Nil(t, err)
 	assert.Contains(t, time1.String(), "2023-07-12 08:54:24 +")
+
+	someProp2, err := parseNode.GetChildNode("withZone")
+	assert.Nil(t, err)
+	time2, err := someProp2.GetTimeValue()
+	assert.Nil(t, err)
+	assert.Contains(t, time2.String(), "2023-07-12 09:54:24 +")
 }
 
 func TestThrowErrorOfPrimitiveType(t *testing.T) {
