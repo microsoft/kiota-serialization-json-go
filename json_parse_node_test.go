@@ -179,6 +179,25 @@ func TestFunctional(t *testing.T) {
 	}
 }
 
+func TestParsingTime(t *testing.T) {
+	source := `{
+			"noZone": "2023-07-12T08:54:24",
+			"withZone": "2023-07-12T08:54:24"
+	  }`
+
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+
+	someProp, err := parseNode.GetChildNode("noZone")
+	assert.Nil(t, err)
+	time1, err := someProp.GetTimeValue()
+	assert.Nil(t, err)
+	assert.Contains(t, time1.String(), "2023-07-12T08:54:24 +")
+}
+
 func TestThrowErrorOfPrimitiveType(t *testing.T) {
 	source := `{
 				"id": "2",
