@@ -296,12 +296,16 @@ func TestShortEscapeSequencesInString(t *testing.T) {
 			expected: []byte(`"\\"`),
 		},
 		{
-			input:    0x08, // backspace character
-			expected: []byte(`"\b"`),
+			input: 0x08, // backspace character
+			// Until go1.22 is released this will be the more generic \u0008 escape
+			// code.
+			expected: []byte(`"\u0008"`),
 		},
 		{
-			input:    0x0c, // form feed character
-			expected: []byte(`"\f"`),
+			input: 0x0c, // form feed character
+			// Until go1.22 is released this will be the more generic \u000c escape
+			// code.
+			expected: []byte(`"\u000c"`),
 		},
 		{
 			input:    0x0a, // line feed character
@@ -318,7 +322,7 @@ func TestShortEscapeSequencesInString(t *testing.T) {
 	}
 
 	for _, test := range table {
-		t.Run(fmt.Sprintf("%02X", test.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("0x%02X", test.input), func(t *testing.T) {
 			stringInput := string(test.input)
 
 			serializer := NewJsonSerializationWriter()
@@ -380,15 +384,15 @@ func TestLongEscapeSequencesInString(t *testing.T) {
 		},
 		{
 			input:    0x0b,
-			expected: []byte(`"\u000B"`),
+			expected: []byte(`"\u000b"`),
 		},
 		{
 			input:    0x0e,
-			expected: []byte(`"\u000E"`),
+			expected: []byte(`"\u000e"`),
 		},
 		{
 			input:    0x0f,
-			expected: []byte(`"\u000F"`),
+			expected: []byte(`"\u000f"`),
 		},
 		{
 			input:    0x10,
@@ -432,32 +436,32 @@ func TestLongEscapeSequencesInString(t *testing.T) {
 		},
 		{
 			input:    0x1a,
-			expected: []byte(`"\u001A"`),
+			expected: []byte(`"\u001a"`),
 		},
 		{
 			input:    0x1b,
-			expected: []byte(`"\u001B"`),
+			expected: []byte(`"\u001b"`),
 		},
 		{
 			input:    0x1c,
-			expected: []byte(`"\u001C"`),
+			expected: []byte(`"\u001c"`),
 		},
 		{
 			input:    0x1d,
-			expected: []byte(`"\u001D"`),
+			expected: []byte(`"\u001d"`),
 		},
 		{
 			input:    0x1e,
-			expected: []byte(`"\u001E"`),
+			expected: []byte(`"\u001e"`),
 		},
 		{
 			input:    0x1f,
-			expected: []byte(`"\u001F"`),
+			expected: []byte(`"\u001f"`),
 		},
 	}
 
 	for _, test := range table {
-		t.Run(fmt.Sprintf("%02X", test.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("0x%02X", test.input), func(t *testing.T) {
 			stringInput := string(test.input)
 
 			serializer := NewJsonSerializationWriter()
