@@ -52,13 +52,27 @@ func (w *JsonSerializationWriter) writeRawValue(value ...string) {
 	}
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
-	value = strings.ReplaceAll(value, `\`, `\\`)
-	value = strings.ReplaceAll(value, `"`, `\"`)
-	value = strings.ReplaceAll(value, "\n", `\n`)
-	value = strings.ReplaceAll(value, "\r", `\r`)
-	value = strings.ReplaceAll(value, "\t", `\t`)
+	builder := &strings.Builder{}
 
-	w.writeRawValue("\"", value, "\"")
+	// Turning off HTML escaping may not be strictly necessary but it matches with
+	// the current behavior. Testing with Exchange mail shows that it will
+	// accept and properly interpret data sent with and without HTML escaping
+	// enabled when creating emails with body content type HTML and HTML tags in
+	// the body content.
+	enc := json.NewEncoder(builder)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "")
+	enc.Encode(value)
+
+	// Note that builder.String() returns a slice referencing the internal memory
+	// of builder. This means it's unsafe to continue holding that reference once
+	// this function exits (for example some conditions where a pool was used to
+	// reduce strings.Builder allocations). We can use it here directly since
+	// writeRawValue calls WriteString on a different buffer which should cause a
+	// copy of the contents. If that's changed though this will need updated.
+	s := builder.String()
+	// Need to trim off the trailing newline the encoder adds.
+	w.writeRawValue(s[:len(s)-1])
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {
 	w.writeRawValue("\"", key, "\":")
