@@ -53,6 +53,11 @@ func (w *JsonSerializationWriter) writeRawValue(value ...string) {
 }
 func (w *JsonSerializationWriter) writeStringValue(value string) {
 	builder := &strings.Builder{}
+	// Allocate at least enough space for the string and quotes. However, it's
+	// possible that slightly overallocating may be a better strategy because then
+	// it would at least be able to handle a few character escape sequences
+	// without another allocation.
+	builder.Grow(len(value) + 2)
 
 	// Turning off HTML escaping may not be strictly necessary but it matches with
 	// the current behavior. Testing with Exchange mail shows that it will
