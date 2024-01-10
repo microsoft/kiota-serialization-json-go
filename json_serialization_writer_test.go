@@ -278,6 +278,206 @@ func TestEscapeTabAndCarriageReturnInStrings(t *testing.T) {
 	assert.Equal(t, expected, converted)
 }
 
+// TestShortEscapeSequencesInString tests that strings containing characters
+// with 2-character escape sequences according to RFC 8259 section 7 are
+// properly encoded as JSON.
+func TestShortEscapeSequencesInString(t *testing.T) {
+	// Expected results for each test are quoted since it's a JSON string.
+	table := []struct {
+		input    byte
+		expected []byte
+	}{
+		{
+			input:    0x22, // " character
+			expected: []byte(`"\""`),
+		},
+		{
+			input:    0x5c, // \ character
+			expected: []byte(`"\\"`),
+		},
+		{
+			input: 0x08, // backspace character
+			// Until go1.22 is released this will be the more generic \u0008 escape
+			// code.
+			expected: []byte(`"\u0008"`),
+		},
+		{
+			input: 0x0c, // form feed character
+			// Until go1.22 is released this will be the more generic \u000c escape
+			// code.
+			expected: []byte(`"\u000c"`),
+		},
+		{
+			input:    0x0a, // line feed character
+			expected: []byte(`"\n"`),
+		},
+		{
+			input:    0x0d, // carriage return character
+			expected: []byte(`"\r"`),
+		},
+		{
+			input:    0x09, // tab character
+			expected: []byte(`"\t"`),
+		},
+	}
+
+	for _, test := range table {
+		t.Run(fmt.Sprintf("0x%02X", test.input), func(t *testing.T) {
+			stringInput := string(test.input)
+
+			serializer := NewJsonSerializationWriter()
+			err := serializer.WriteStringValue("", &stringInput)
+			assert.NoError(t, err)
+
+			result, err := serializer.GetSerializedContent()
+			assert.NoError(t, err)
+
+			assert.Equal(t, test.expected, result)
+
+			assert.True(t, json.Valid(result), "valid JSON")
+		})
+	}
+}
+
+// TestLongEscapeSequencesInString tests that strings containing characters
+// without 2-character escape sequences according to RFC 8259 section 7 are
+// properly encoded as JSON.
+func TestLongEscapeSequencesInString(t *testing.T) {
+	// Manually adding these expected results since the code to generate them with
+	// a loop would be pretty similar to the code to generate the escape sequences
+	// which could make it susceptible to similar logic errors.
+	table := []struct {
+		input    byte
+		expected []byte
+	}{
+		{
+			input:    0x00,
+			expected: []byte(`"\u0000"`),
+		},
+		{
+			input:    0x01,
+			expected: []byte(`"\u0001"`),
+		},
+		{
+			input:    0x02,
+			expected: []byte(`"\u0002"`),
+		},
+		{
+			input:    0x03,
+			expected: []byte(`"\u0003"`),
+		},
+		{
+			input:    0x04,
+			expected: []byte(`"\u0004"`),
+		},
+		{
+			input:    0x05,
+			expected: []byte(`"\u0005"`),
+		},
+		{
+			input:    0x06,
+			expected: []byte(`"\u0006"`),
+		},
+		{
+			input:    0x07,
+			expected: []byte(`"\u0007"`),
+		},
+		{
+			input:    0x0b,
+			expected: []byte(`"\u000b"`),
+		},
+		{
+			input:    0x0e,
+			expected: []byte(`"\u000e"`),
+		},
+		{
+			input:    0x0f,
+			expected: []byte(`"\u000f"`),
+		},
+		{
+			input:    0x10,
+			expected: []byte(`"\u0010"`),
+		},
+		{
+			input:    0x11,
+			expected: []byte(`"\u0011"`),
+		},
+		{
+			input:    0x12,
+			expected: []byte(`"\u0012"`),
+		},
+		{
+			input:    0x13,
+			expected: []byte(`"\u0013"`),
+		},
+		{
+			input:    0x14,
+			expected: []byte(`"\u0014"`),
+		},
+		{
+			input:    0x15,
+			expected: []byte(`"\u0015"`),
+		},
+		{
+			input:    0x16,
+			expected: []byte(`"\u0016"`),
+		},
+		{
+			input:    0x17,
+			expected: []byte(`"\u0017"`),
+		},
+		{
+			input:    0x18,
+			expected: []byte(`"\u0018"`),
+		},
+		{
+			input:    0x19,
+			expected: []byte(`"\u0019"`),
+		},
+		{
+			input:    0x1a,
+			expected: []byte(`"\u001a"`),
+		},
+		{
+			input:    0x1b,
+			expected: []byte(`"\u001b"`),
+		},
+		{
+			input:    0x1c,
+			expected: []byte(`"\u001c"`),
+		},
+		{
+			input:    0x1d,
+			expected: []byte(`"\u001d"`),
+		},
+		{
+			input:    0x1e,
+			expected: []byte(`"\u001e"`),
+		},
+		{
+			input:    0x1f,
+			expected: []byte(`"\u001f"`),
+		},
+	}
+
+	for _, test := range table {
+		t.Run(fmt.Sprintf("0x%02X", test.input), func(t *testing.T) {
+			stringInput := string(test.input)
+
+			serializer := NewJsonSerializationWriter()
+			err := serializer.WriteStringValue("", &stringInput)
+			assert.NoError(t, err)
+
+			result, err := serializer.GetSerializedContent()
+			assert.NoError(t, err)
+
+			assert.Equal(t, test.expected, result)
+
+			assert.True(t, json.Valid(result), "valid JSON")
+		})
+	}
+}
+
 func TestWriteValuesConcurrently(t *testing.T) {
 	instances := 100
 	output := make([][]byte, instances)
