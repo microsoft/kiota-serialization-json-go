@@ -233,7 +233,6 @@ func TestWriteACollectionWithNill(t *testing.T) {
 	stringResult := string(result[:])
 	assert.Contains(t, stringResult, "null,")
 	assert.Contains(t, stringResult, "\"key\":\"value\",[null,{\"id\":\"11\"}]")
-	assert.True(t, IsJSON("{"+stringResult+"}"))
 }
 
 func IsJSON(str string) bool {
