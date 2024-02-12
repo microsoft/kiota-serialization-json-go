@@ -215,6 +215,26 @@ func TestWriteInvalidAdditionalData(t *testing.T) {
 	assert.True(t, IsJSON("{"+stringResult+"}"))
 }
 
+func TestWriteACollectionWithNill(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	value := "value"
+	serializer.WriteStringValue("key", &value)
+
+	prop1Value1 := internal.NewTestEntity()
+	idIntValue1 := "11"
+	prop1Value1.SetId(&idIntValue1)
+
+	collection := []absser.Parsable{nil, prop1Value1}
+	err := serializer.WriteCollectionOfObjectValues("", collection)
+
+	assert.Nil(t, err)
+	result, err := serializer.GetSerializedContent()
+
+	stringResult := string(result[:])
+	assert.Contains(t, stringResult, "null,")
+	assert.Contains(t, stringResult, "\"key\":\"value\",[null,{\"id\":\"11\"}]")
+}
+
 func IsJSON(str string) bool {
 	var js json.RawMessage
 	err := json.Unmarshal([]byte(str), &js)

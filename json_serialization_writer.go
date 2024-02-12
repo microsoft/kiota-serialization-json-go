@@ -331,9 +331,16 @@ func (w *JsonSerializationWriter) WriteCollectionOfObjectValues(key string, coll
 		}
 		w.writeArrayStart()
 		for _, item := range collection {
-			err := w.WriteObjectValue("", item)
-			if err != nil {
-				return err
+			if item != nil {
+				err := w.WriteObjectValue("", item)
+				if err != nil {
+					return err
+				}
+			} else {
+				err := w.WriteNullValue("")
+				if err != nil {
+					return err
+				}
 			}
 			w.writePropertySeparator()
 		}
