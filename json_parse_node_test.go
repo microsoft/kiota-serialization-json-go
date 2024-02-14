@@ -222,6 +222,95 @@ func TestThrowErrorOfPrimitiveType(t *testing.T) {
 	assert.Equal(t, "targetType wrong.UUID is not supported", err.Error())
 }
 
+func TestUntypedJsonObject(t *testing.T) {
+	sourceJson := []byte(TestUntypedJson)
+	parseNode, err := NewJsonParseNode(sourceJson)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	if parseNode == nil {
+		t.Errorf("Expected parse node to be non-nil")
+	}
+
+	parsable, err := parseNode.GetObjectValue(internal.UntypedTestEntityDiscriminator)
+	testEntity := parsable.(*internal.UntypedTestEntity)
+	assert.Nil(t, err)
+	assert.NotNil(t, testEntity)
+
+	assert.Equal(t, "5", *testEntity.GetId())
+	assert.Equal(t, "Project 101", *testEntity.GetTitle())
+	assert.NotNil(t, testEntity.GetLocation())
+	assert.NotNil(t, testEntity.GetKeywords())
+	assert.Nil(t, testEntity.GetDetail())
+
+	location := testEntity.GetLocation().(*absser.UntypedObject)
+	assert.NotNil(t, location)
+	locationProperties := location.GetValue()
+	assert.NotNil(t, locationProperties)
+
+	untypedDisplayName := locationProperties["displayName"].(*absser.UntypedString)
+	assert.Equal(t, "Microsoft Building 92", *untypedDisplayName.GetValue())
+
+	untypedAddress := locationProperties["address"].(*absser.UntypedObject)
+	assert.NotNil(t, untypedAddress)
+
+	untypedCount := locationProperties["floorCount"].(*absser.UntypedDouble)
+	assert.Equal(t, float64(50), *untypedCount.GetValue())
+
+	untypedBool := locationProperties["hasReception"].(*absser.UntypedBoolean)
+	assert.Equal(t, true, *untypedBool.GetValue())
+
+	untypedNull := locationProperties["contact"].(*absser.UntypedNull)
+	assert.Equal(t, nil, untypedNull.GetValue())
+
+	untypedArray := testEntity.GetKeywords().(*absser.UntypedArray)
+	assert.NotNil(t, untypedArray)
+	assert.Equal(t, 2, len(untypedArray.GetValue()))
+
+	additionalData := testEntity.GetAdditionalData()
+	assert.NotNil(t, additionalData)
+}
+
+const TestUntypedJson = "{\r\n" +
+	"    \"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#sites('contoso.sharepoint.com')/lists('fa631c4d-ac9f-4884-a7f5-13c659d177e3')/items('1')/fields/$entity\",\r\n" +
+	"    \"id\": \"5\",\r\n" +
+	"    \"title\": \"Project 101\",\r\n" +
+	"    \"location\": {\r\n" +
+	"        \"address\": {\r\n" +
+	"            \"city\": \"Redmond\",\r\n" +
+	"            \"postalCode\": \"98052\",\r\n" +
+	"            \"state\": \"Washington\",\r\n" +
+	"            \"street\": \"NE 36th St\"\r\n" +
+	"        },\r\n" +
+	"        \"coordinates\": {\r\n" +
+	"            \"latitude\": 47.641942,\r\n" +
+	"            \"longitude\": -122.127222\r\n" +
+	"        },\r\n" +
+	"        \"displayName\": \"Microsoft Building 92\",\r\n" +
+	"        \"floorCount\": 50,\r\n" +
+	"        \"hasReception\": true,\r\n" +
+	"        \"contact\": null\r\n" +
+	"    },\r\n" +
+	"    \"keywords\": [\r\n" +
+	"        {\r\n" +
+	"            \"created\": \"2023-07-26T10:41:26Z\",\r\n" +
+	"            \"label\": \"Keyword1\",\r\n" +
+	"            \"termGuid\": \"10e9cc83-b5a4-4c8d-8dab-4ada1252dd70\",\r\n" +
+	"            \"wssId\": 6442450942\r\n" +
+	"        },\r\n" +
+	"        {\r\n" +
+	"            \"created\": \"2023-07-26T10:51:26Z\",\r\n" +
+	"            \"label\": \"Keyword2\",\r\n" +
+	"            \"termGuid\": \"2cae6c6a-9bb8-4a78-afff-81b88e735fef\",\r\n" +
+	"            \"wssId\": 6442450943\r\n" +
+	"        }\r\n" +
+	"    ],\r\n" +
+	"    \"detail\": null,\r\n" +
+	"    \"extra\": {\r\n" +
+	"        \"createdDateTime\":\"2024-01-15T00:00:00\\u002B00:00\"\r\n" +
+	"    }\r\n" +
+	"}"
+
 const FunctionalTestSource = "{" +
 	"\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#users('vincent%40biret365.onmicrosoft.com')/messages\"," +
 	"\"@odata.nextLink\": \"https://graph.microsoft.com/v1.0/users/vincent@biret365.onmicrosoft.com/messages?$skip=10\"," +

@@ -279,6 +279,72 @@ func (w *JsonSerializationWriter) WriteByteArrayValue(key string, value []byte) 
 func (w *JsonSerializationWriter) WriteObjectValue(key string, item absser.Parsable, additionalValuesToMerge ...absser.Parsable) error {
 	additionalValuesLen := len(additionalValuesToMerge)
 	if item != nil || additionalValuesLen > 0 {
+		untypedNode, isUntypedNode := item.(absser.UntypedNodeable)
+		if isUntypedNode {
+			switch value := untypedNode.(type) {
+			case *absser.UntypedBoolean:
+				w.WriteBoolValue(key, value.GetValue())
+				return nil
+			case *absser.UntypedFloat:
+				w.WriteFloat32Value(key, value.GetValue())
+				return nil
+			case *absser.UntypedDouble:
+				w.WriteFloat64Value(key, value.GetValue())
+				return nil
+			case *absser.UntypedInteger:
+				w.WriteInt32Value(key, value.GetValue())
+				return nil
+			case *absser.UntypedLong:
+				w.WriteInt64Value(key, value.GetValue())
+				return nil
+			case *absser.UntypedNull:
+				w.WriteNullValue(key)
+				return nil
+			case *absser.UntypedString:
+				w.WriteStringValue(key, value.GetValue())
+				return nil
+			case *absser.UntypedObject:
+				if key != "" {
+					w.writePropertyName(key)
+				}
+				properties := value.GetValue()
+				if properties != nil {
+					w.writeObjectStart()
+					for objectKey, val := range properties {
+						err := w.WriteObjectValue(objectKey, val)
+						if err != nil {
+							return err
+						}
+					}
+					w.writeObjectEnd()
+					if key != "" {
+						w.writePropertySeparator()
+					}
+				}
+				return nil
+			case *absser.UntypedArray:
+				if key != "" {
+					w.writePropertyName(key)
+				}
+				values := value.GetValue()
+				if values != nil {
+					w.writeArrayStart()
+					for _, val := range values {
+						err := w.WriteObjectValue("", val)
+						if err != nil {
+							return err
+						}
+						w.writePropertySeparator()
+					}
+					w.writeArrayEnd()
+				}
+				if key != "" {
+					w.writePropertySeparator()
+				}
+				return nil
+			}
+		}
+
 		if key != "" {
 			w.writePropertyName(key)
 		}
@@ -822,6 +888,8 @@ func (w *JsonSerializationWriter) WriteAdditionalData(value map[string]interface
 				err = w.WriteDateOnlyValue(key, value)
 			case absser.DateOnly:
 				err = w.WriteDateOnlyValue(key, &value)
+			case absser.UntypedNodeable:
+				err = w.WriteObjectValue(key, value)
 			default:
 				err = w.WriteAnyValue(key, &value)
 			}
