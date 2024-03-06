@@ -316,16 +316,12 @@ func TestShortEscapeSequencesInString(t *testing.T) {
 			expected: []byte(`"\\"`),
 		},
 		{
-			input: 0x08, // backspace character
-			// Until go1.22 is released this will be the more generic \u0008 escape
-			// code.
-			expected: []byte(`"\u0008"`),
+			input:    0x08, // backspace character
+			expected: []byte(`"\b"`),
 		},
 		{
-			input: 0x0c, // form feed character
-			// Until go1.22 is released this will be the more generic \u000c escape
-			// code.
-			expected: []byte(`"\u000c"`),
+			input:    0x0c, // form feed character
+			expected: []byte(`"\f"`),
 		},
 		{
 			input:    0x0a, // line feed character
