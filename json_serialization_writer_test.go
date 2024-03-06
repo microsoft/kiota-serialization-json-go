@@ -587,63 +587,64 @@ func TestWriteUntypedJson(t *testing.T) {
 
 	addressProperties := make(map[string]absser.UntypedNodeable)
 	city := "Redmond"
-	addressProperties["city"] = absser.NewUntypedString(&city)
+	addressProperties["city"], _ = absser.NewUntypedString(&city)
 	postalCode := "98052"
-	addressProperties["postalCode"] = absser.NewUntypedString(&postalCode)
+	addressProperties["postalCode"], _ = absser.NewUntypedString(&postalCode)
 	state := "Washington"
-	addressProperties["state"] = absser.NewUntypedString(&state)
+	addressProperties["state"], _ = absser.NewUntypedString(&state)
 	street := "NE 36th St"
-	addressProperties["street"] = absser.NewUntypedString(&street)
+	addressProperties["street"], _ = absser.NewUntypedString(&street)
 
-	locationProperties["address"] = absser.NewUntypedObject(addressProperties)
+	locationProperties["address"], _ = absser.NewUntypedObject(addressProperties)
 
 	coordinatesProperties := make(map[string]absser.UntypedNodeable)
 	latitude := 47.641942
-	coordinatesProperties["latitude"] = absser.NewUntypedDouble(&latitude)
+	coordinatesProperties["latitude"], _ = absser.NewUntypedDouble(&latitude)
 	longitude := -122.127222
-	coordinatesProperties["longitude"] = absser.NewUntypedDouble(&longitude)
+	coordinatesProperties["longitude"], _ = absser.NewUntypedDouble(&longitude)
 
-	locationProperties["coordinates"] = absser.NewUntypedObject(coordinatesProperties)
+	locationProperties["coordinates"], _ = absser.NewUntypedObject(coordinatesProperties)
 
 	displayName := "Microsoft Building 92"
-	locationProperties["displayName"] = absser.NewUntypedString(&displayName)
+	locationProperties["displayName"], _ = absser.NewUntypedString(&displayName)
 	floorCount := int32(50)
-	locationProperties["floorCount"] = absser.NewUntypedInteger(&floorCount)
+	locationProperties["floorCount"], _ = absser.NewUntypedInteger(&floorCount)
 	hasReception := true
-	locationProperties["hasReception"] = absser.NewUntypedBoolean(&hasReception)
+	locationProperties["hasReception"], _ = absser.NewUntypedBoolean(&hasReception)
 	locationProperties["contact"] = absser.NewUntypedNull()
-	location := absser.NewUntypedObject(locationProperties)
+	location, _ := absser.NewUntypedObject(locationProperties)
 	untypedTestEntity.SetLocation(location)
 
 	keywords := make([]absser.UntypedNodeable, 2)
 	firstKeywordProperties := make(map[string]absser.UntypedNodeable)
 	created := "2023-07-26T10:41:26Z"
-	firstKeywordProperties["created"] = absser.NewUntypedString(&created)
+	firstKeywordProperties["created"], _ = absser.NewUntypedString(&created)
 	label := "Keyword1"
-	firstKeywordProperties["label"] = absser.NewUntypedString(&label)
+	firstKeywordProperties["label"], _ = absser.NewUntypedString(&label)
 	termGuid := "10e9cc83-b5a4-4c8d-8dab-4ada1252dd70"
-	firstKeywordProperties["termGuid"] = absser.NewUntypedString(&termGuid)
+	firstKeywordProperties["termGuid"], _ = absser.NewUntypedString(&termGuid)
 	wssId := int64(6442450941)
-	firstKeywordProperties["wssId"] = absser.NewUntypedLong(&wssId)
-	keywords[0] = absser.NewUntypedObject(firstKeywordProperties)
+	firstKeywordProperties["wssId"], _ = absser.NewUntypedLong(&wssId)
+	keywords[0], _ = absser.NewUntypedObject(firstKeywordProperties)
 
 	secondKeywordProperties := make(map[string]absser.UntypedNodeable)
 	created = "2023-07-26T10:51:26Z"
-	secondKeywordProperties["created"] = absser.NewUntypedString(&created)
+	secondKeywordProperties["created"], _ = absser.NewUntypedString(&created)
 	label = "Keyword2"
-	secondKeywordProperties["label"] = absser.NewUntypedString(&label)
+	secondKeywordProperties["label"], _ = absser.NewUntypedString(&label)
 	termGuid = "2cae6c6a-9bb8-4a78-afff-81b88e735fef"
-	secondKeywordProperties["termGuid"] = absser.NewUntypedString(&termGuid)
+	secondKeywordProperties["termGuid"], _ = absser.NewUntypedString(&termGuid)
 	wssId = int64(6442450942)
-	secondKeywordProperties["wssId"] = absser.NewUntypedLong(&wssId)
-	keywords[1] = absser.NewUntypedObject(secondKeywordProperties)
+	secondKeywordProperties["wssId"], _ = absser.NewUntypedLong(&wssId)
+	keywords[1], _ = absser.NewUntypedObject(secondKeywordProperties)
 
-	untypedTestEntity.SetKeywords(absser.NewUntypedArray(keywords))
+	untypedKeywordsArray, _ := absser.NewUntypedArray(keywords)
+	untypedTestEntity.SetKeywords(untypedKeywordsArray)
 
 	extraProperties := make(map[string]absser.UntypedNodeable)
 	createdDateTime := "2024-01-15T00:00:00+00:00"
-	extraProperties["createdDateTime"] = absser.NewUntypedString(&createdDateTime)
-	extra := absser.NewUntypedObject(extraProperties)
+	extraProperties["createdDateTime"], _ = absser.NewUntypedString(&createdDateTime)
+	extra, _ := absser.NewUntypedObject(extraProperties)
 	additionalData := make(map[string]interface{})
 	additionalData["extra"] = extra
 	untypedTestEntity.SetAdditionalData(additionalData)

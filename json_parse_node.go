@@ -8,9 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"time"
+
+	"github.com/google/uuid"
 
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -192,17 +193,17 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	if isUntypedNode {
 		switch value := n.value.(type) {
 		case *bool:
-			return absser.NewUntypedBoolean(value), nil
+			return absser.NewUntypedBoolean(value)
 		case *string:
-			return absser.NewUntypedString(value), nil
+			return absser.NewUntypedString(value)
 		case *float32:
-			return absser.NewUntypedFloat(value), nil
+			return absser.NewUntypedFloat(value)
 		case *float64:
-			return absser.NewUntypedDouble(value), nil
+			return absser.NewUntypedDouble(value)
 		case *int32:
-			return absser.NewUntypedInteger(value), nil
+			return absser.NewUntypedInteger(value)
 		case *int64:
-			return absser.NewUntypedLong(value), nil
+			return absser.NewUntypedLong(value)
 		case nil:
 			return absser.NewUntypedNull(), nil
 		case map[string]*JsonParseNode:
@@ -220,7 +221,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 					properties[key] = property
 				}
 			}
-			return absser.NewUntypedObject(properties), nil
+			return absser.NewUntypedObject(properties)
 		case []*JsonParseNode:
 			collection := make([]absser.UntypedNodeable, len(value))
 			for index, node := range value {
@@ -237,7 +238,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				}
 
 			}
-			return absser.NewUntypedArray(collection), nil
+			return absser.NewUntypedArray(collection)
 		default:
 			return absser.NewUntypedNode(value), nil
 		}
