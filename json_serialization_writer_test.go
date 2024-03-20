@@ -316,16 +316,12 @@ func TestShortEscapeSequencesInString(t *testing.T) {
 			expected: []byte(`"\\"`),
 		},
 		{
-			input: 0x08, // backspace character
-			// Until go1.22 is released this will be the more generic \u0008 escape
-			// code.
-			expected: []byte(`"\u0008"`),
+			input:    0x08, // backspace character
+			expected: []byte(`"\b"`),
 		},
 		{
-			input: 0x0c, // form feed character
-			// Until go1.22 is released this will be the more generic \u000c escape
-			// code.
-			expected: []byte(`"\u000c"`),
+			input:    0x0c, // form feed character
+			expected: []byte(`"\f"`),
 		},
 		{
 			input:    0x0a, // line feed character
@@ -577,6 +573,79 @@ func TestJsonSerializationWriter(t *testing.T) {
 	assert.Equal(t, 1, countBefore)
 	assert.Equal(t, 1, countAfter)
 	assert.Equal(t, 1, countStart)
+}
+
+func TestWriteUntypedJson(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	untypedTestEntity := internal.NewUntypedTestEntity()
+	id := "1"
+	untypedTestEntity.SetId(&id)
+	title := "Title"
+	untypedTestEntity.SetTitle(&title)
+
+	locationProperties := make(map[string]absser.UntypedNodeable)
+
+	addressProperties := make(map[string]absser.UntypedNodeable)
+	addressProperties["city"] = absser.NewUntypedString("Redmond")
+	addressProperties["postalCode"] = absser.NewUntypedString("98052")
+	addressProperties["state"] = absser.NewUntypedString("Washington")
+	addressProperties["street"] = absser.NewUntypedString("NE 36th St")
+
+	locationProperties["address"] = absser.NewUntypedObject(addressProperties)
+
+	coordinatesProperties := make(map[string]absser.UntypedNodeable)
+	coordinatesProperties["latitude"] = absser.NewUntypedDouble(47.641942)
+	coordinatesProperties["longitude"] = absser.NewUntypedDouble(-122.127222)
+
+	locationProperties["coordinates"] = absser.NewUntypedObject(coordinatesProperties)
+
+	locationProperties["displayName"] = absser.NewUntypedString("Microsoft Building 92")
+	locationProperties["floorCount"] = absser.NewUntypedInteger(int32(50))
+	locationProperties["hasReception"] = absser.NewUntypedBoolean(true)
+	locationProperties["contact"] = absser.NewUntypedNull()
+	location := absser.NewUntypedObject(locationProperties)
+	untypedTestEntity.SetLocation(location)
+
+	keywords := make([]absser.UntypedNodeable, 2)
+	firstKeywordProperties := make(map[string]absser.UntypedNodeable)
+	firstKeywordProperties["created"] = absser.NewUntypedString("2023-07-26T10:41:26Z")
+	firstKeywordProperties["label"] = absser.NewUntypedString("Keyword1")
+	firstKeywordProperties["termGuid"] = absser.NewUntypedString("10e9cc83-b5a4-4c8d-8dab-4ada1252dd70")
+	firstKeywordProperties["wssId"] = absser.NewUntypedLong(int64(6442450941))
+	keywords[0] = absser.NewUntypedObject(firstKeywordProperties)
+
+	secondKeywordProperties := make(map[string]absser.UntypedNodeable)
+	secondKeywordProperties["created"] = absser.NewUntypedString("2023-07-26T10:51:26Z")
+	secondKeywordProperties["label"] = absser.NewUntypedString("Keyword2")
+	secondKeywordProperties["termGuid"] = absser.NewUntypedString("2cae6c6a-9bb8-4a78-afff-81b88e735fef")
+	secondKeywordProperties["wssId"] = absser.NewUntypedLong(int64(6442450942))
+	keywords[1] = absser.NewUntypedObject(secondKeywordProperties)
+
+	untypedKeywordsArray := absser.NewUntypedArray(keywords)
+	untypedTestEntity.SetKeywords(untypedKeywordsArray)
+
+	extraProperties := make(map[string]absser.UntypedNodeable)
+	extraProperties["createdDateTime"] = absser.NewUntypedString("2024-01-15T00:00:00+00:00")
+	extra := absser.NewUntypedObject(extraProperties)
+	additionalData := make(map[string]interface{})
+	additionalData["extra"] = extra
+	untypedTestEntity.SetAdditionalData(additionalData)
+
+	err := serializer.WriteObjectValue("", untypedTestEntity)
+	assert.NoError(t, err)
+	result, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	resultString := string(result[:])
+	assert.Contains(t, resultString, "\"id\":\"1\",")
+	assert.Contains(t, resultString, "\"title\":\"Title\",")
+	assert.Contains(t, resultString, "\"extra\":{\"createdDateTime\":\"2024-01-15T00:00:00+00:00\"}}")
+	assert.Contains(t, resultString, "\"hasReception\":true")
+	assert.Contains(t, resultString, "\"keywords\":[")
+	assert.Contains(t, resultString, "\"wssId\":6442450942")
+	assert.Contains(t, resultString, "\"hasReception\":true")
+	assert.Contains(t, resultString, "\"floorCount\":50")
+	assert.Contains(t, resultString, "\"termGuid\":\"10e9cc83-b5a4-4c8d-8dab-4ada1252dd70\"")
+
 }
 
 type TestStruct struct {

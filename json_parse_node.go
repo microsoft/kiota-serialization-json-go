@@ -8,9 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"time"
+
+	"github.com/google/uuid"
 
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -187,6 +188,62 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	if err != nil {
 		return nil, err
 	}
+
+	_, isUntypedNode := result.(absser.UntypedNodeable)
+	if isUntypedNode {
+		switch value := n.value.(type) {
+		case *bool:
+			return absser.NewUntypedBoolean(*value), nil
+		case *string:
+			return absser.NewUntypedString(*value), nil
+		case *float32:
+			return absser.NewUntypedFloat(*value), nil
+		case *float64:
+			return absser.NewUntypedDouble(*value), nil
+		case *int32:
+			return absser.NewUntypedInteger(*value), nil
+		case *int64:
+			return absser.NewUntypedLong(*value), nil
+		case nil:
+			return absser.NewUntypedNull(), nil
+		case map[string]*JsonParseNode:
+			properties := make(map[string]absser.UntypedNodeable)
+			for key, value := range value {
+				parsable, err := value.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+				if err != nil {
+					return nil, errors.New("cannot parse object value")
+				}
+				if parsable == nil {
+					parsable = absser.NewUntypedNull()
+				}
+				property, ok := parsable.(absser.UntypedNodeable)
+				if ok {
+					properties[key] = property
+				}
+			}
+			return absser.NewUntypedObject(properties), nil
+		case []*JsonParseNode:
+			collection := make([]absser.UntypedNodeable, len(value))
+			for index, node := range value {
+				parsable, err := node.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+				if err != nil {
+					return nil, errors.New("cannot parse object value")
+				}
+				if parsable == nil {
+					parsable = absser.NewUntypedNull()
+				}
+				property, ok := parsable.(absser.UntypedNodeable)
+				if ok {
+					collection[index] = property
+				}
+
+			}
+			return absser.NewUntypedArray(collection), nil
+		default:
+			return absser.NewUntypedNode(value), nil
+		}
+	}
+
 	abstractions.InvokeParsableAction(n.GetOnBeforeAssignFieldValues(), result)
 	properties, ok := n.value.(map[string]*JsonParseNode)
 	fields := result.GetFieldDeserializers()
