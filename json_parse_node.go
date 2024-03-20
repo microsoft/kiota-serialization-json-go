@@ -193,17 +193,17 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	if isUntypedNode {
 		switch value := n.value.(type) {
 		case *bool:
-			return absser.NewUntypedBoolean(value)
+			return absser.NewUntypedBoolean(*value), nil
 		case *string:
-			return absser.NewUntypedString(value)
+			return absser.NewUntypedString(*value), nil
 		case *float32:
-			return absser.NewUntypedFloat(value)
+			return absser.NewUntypedFloat(*value), nil
 		case *float64:
-			return absser.NewUntypedDouble(value)
+			return absser.NewUntypedDouble(*value), nil
 		case *int32:
-			return absser.NewUntypedInteger(value)
+			return absser.NewUntypedInteger(*value), nil
 		case *int64:
-			return absser.NewUntypedLong(value)
+			return absser.NewUntypedLong(*value), nil
 		case nil:
 			return absser.NewUntypedNull(), nil
 		case map[string]*JsonParseNode:
@@ -221,7 +221,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 					properties[key] = property
 				}
 			}
-			return absser.NewUntypedObject(properties)
+			return absser.NewUntypedObject(properties), nil
 		case []*JsonParseNode:
 			collection := make([]absser.UntypedNodeable, len(value))
 			for index, node := range value {
@@ -238,7 +238,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				}
 
 			}
-			return absser.NewUntypedArray(collection)
+			return absser.NewUntypedArray(collection), nil
 		default:
 			return absser.NewUntypedNode(value), nil
 		}
