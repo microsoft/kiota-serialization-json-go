@@ -1,9 +1,10 @@
 package jsonserialization
 
 import (
+	"testing"
+
 	"github.com/microsoft/kiota-serialization-json-go/internal"
 	"github.com/stretchr/testify/require"
-	"testing"
 
 	absser "github.com/microsoft/kiota-abstractions-go/serialization"
 	"github.com/stretchr/testify/assert"
@@ -269,6 +270,17 @@ func TestUntypedJsonObject(t *testing.T) {
 
 	additionalData := testEntity.GetAdditionalData()
 	assert.NotNil(t, additionalData)
+
+	table := testEntity.GetTable().(*absser.UntypedArray)
+	assert.NotNil(t, untypedArray)
+	for _, row := range table.GetValue() {
+		rowValue := row.(*absser.UntypedArray)
+		assert.NotNil(t, rowValue)
+		for _, cell := range rowValue.GetValue() {
+			cellValue := cell.(*absser.UntypedDouble)
+			assert.NotNil(t, cellValue)
+		}
+	}
 }
 
 const TestUntypedJson = "{\r\n" +
@@ -306,6 +318,7 @@ const TestUntypedJson = "{\r\n" +
 	"        }\r\n" +
 	"    ],\r\n" +
 	"    \"detail\": null,\r\n" +
+	"    \"table\": [[1,2,3],[4,5,6],[7,8,9]],\r\n" +
 	"    \"extra\": {\r\n" +
 	"        \"createdDateTime\":\"2024-01-15T00:00:00\\u002B00:00\"\r\n" +
 	"    }\r\n" +

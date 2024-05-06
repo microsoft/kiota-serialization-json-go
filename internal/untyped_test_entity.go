@@ -11,6 +11,7 @@ type UntypedTestEntity struct {
 	location       absser.UntypedNodeable
 	keywords       absser.UntypedNodeable
 	detail         absser.UntypedNodeable
+	table          absser.UntypedNodeable
 }
 
 type TestUntypedTestEntityable interface {
@@ -26,6 +27,8 @@ type TestUntypedTestEntityable interface {
 	SetKeywords(value absser.UntypedNodeable)
 	GetDetail() absser.UntypedNodeable
 	SetDetail(value absser.UntypedNodeable)
+	GetTable() absser.UntypedNodeable
+	SetTable(value absser.UntypedNodeable)
 }
 
 func NewUntypedTestEntity() *UntypedTestEntity {
@@ -80,6 +83,13 @@ func (e *UntypedTestEntity) SetDetail(value absser.UntypedNodeable) {
 	e.detail = value
 }
 
+func (e *UntypedTestEntity) GetTable() absser.UntypedNodeable {
+	return e.table
+}
+func (e *UntypedTestEntity) SetTable(value absser.UntypedNodeable) {
+	e.table = value
+}
+
 func (e *UntypedTestEntity) GetFieldDeserializers() map[string]func(absser.ParseNode) error {
 	res := make(map[string]func(absser.ParseNode) error)
 	res["id"] = func(n absser.ParseNode) error {
@@ -132,6 +142,16 @@ func (e *UntypedTestEntity) GetFieldDeserializers() map[string]func(absser.Parse
 		}
 		return nil
 	}
+	res["table"] = func(n absser.ParseNode) error {
+		val, err := n.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			e.SetTable(val.(absser.UntypedNodeable))
+		}
+		return nil
+	}
 	return res
 }
 
@@ -162,6 +182,12 @@ func (m *UntypedTestEntity) Serialize(writer absser.SerializationWriter) error {
 	}
 	{
 		err := writer.WriteObjectValue("detail", m.GetDetail())
+		if err != nil {
+			return err
+		}
+	}
+	{
+		err := writer.WriteObjectValue("table", m.GetTable())
 		if err != nil {
 			return err
 		}
