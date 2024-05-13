@@ -535,6 +535,25 @@ func TestJsonSerializationWriter_WriteNullValue(t *testing.T) {
 	assert.Equal(t, "\"name\":null", converted)
 }
 
+func TestJsonSerializationWriter_WriteEnumValue(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+
+	values := []internal.TestSensitivity{internal.NORMAL_SENSITIVITY, internal.PERSONAL_SENSITIVITY, internal.PRIVATE_SENSITIVITY, internal.CONFIDENTIAL_SENSITIVITY}
+	valuesString := internal.SerializeTestSensitivity(values)
+	assert.Equal(t, []string{"normal", "personal", "private", "confidential"}, valuesString) // validates the string representation of the enum values
+
+	test := internal.NewTestEntity()
+	sensitivity := internal.NORMAL_SENSITIVITY
+	test.SetSensitivity(&sensitivity)
+	err := serializer.WriteObjectValue("name", test)
+	assert.NoError(t, err)
+	result, err := serializer.GetSerializedContent()
+	assert.NoError(t, err)
+	converted := string(result)
+
+	assert.Contains(t, converted, "\"sensitivity\":\"normal\"")
+}
+
 func TestJsonSerializationWriter(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	countBefore := 0

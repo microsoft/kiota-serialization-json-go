@@ -122,6 +122,42 @@ func TestNestedGetRawValue(t *testing.T) {
 	assert.Equal(t, expected, value)
 }
 
+func TestValidEnumValue(t *testing.T) {
+	source := `{
+					"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
+					"officeLocation": "Nairobi",
+					"sensitivity": "normal"
+				}`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	parsable, err := parseNode.GetObjectValue(internal.CreateTestEntityFromDiscriminator)
+	testEntity := parsable.(*internal.TestEntity)
+	require.NoError(t, err)
+	assert.Equal(t, "Nairobi", *testEntity.GetOfficeLocation())
+	assert.Equal(t, internal.NORMAL_SENSITIVITY, *testEntity.GetSensitivity())
+}
+
+func TestInvalidEnumValueReturnsNil(t *testing.T) {
+	source := `{
+					"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
+					"officeLocation": "Nairobi",
+					"sensitivity": "invalid"
+				}`
+	sourceArray := []byte(source)
+	parseNode, err := NewJsonParseNode(sourceArray)
+	if err != nil {
+		t.Errorf("Error creating parse node: %s", err.Error())
+	}
+	parsable, err := parseNode.GetObjectValue(internal.CreateTestEntityFromDiscriminator)
+	testEntity := parsable.(*internal.TestEntity)
+	require.NoError(t, err)
+	assert.Equal(t, "Nairobi", *testEntity.GetOfficeLocation())
+	assert.Nil(t, testEntity.GetSensitivity())
+}
+
 func TestNilValuesInCollections(t *testing.T) {
 	source := `{
 				"id": "2",
@@ -131,12 +167,14 @@ func TestNilValuesInCollections(t *testing.T) {
 				"testEntities": [
 					{
 						"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
-						"officeLocation": "Nairobi"
+						"officeLocation": "Nairobi",
+						"sensitivity": "personal"
 					},
 					null,
 					{
 						"id": "acbb4e46-0aa9-11ee-be56-0242ac120002",
-						"officeLocation": "Nairobi"
+						"officeLocation": "Nairobi",
+						"sensitivity": "confidential"
 					}
 				]
 		  }`
