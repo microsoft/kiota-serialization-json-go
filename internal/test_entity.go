@@ -7,10 +7,10 @@ import (
 )
 
 type TestEntity struct {
-	additionalData map[string]interface{}
-	id             *string
-	officeLocation *string
-	//TODO test numbers enum
+	additionalData  map[string]interface{}
+	id              *string
+	officeLocation  *string
+	sensitivity     *TestSensitivity
 	workDuration    *absser.ISODuration
 	birthDay        *absser.DateOnly
 	startWorkTime   *absser.TimeOnly
@@ -35,6 +35,8 @@ type TestEntityable interface {
 	SetEndWorkTime(value *absser.TimeOnly)
 	GetCreatedDateTime() *time.Time
 	SetCreatedDateTime(value *time.Time)
+	GetSensitivity() *TestSensitivity
+	SetSensitivity(value *TestSensitivity)
 }
 
 func TestEntityDiscriminator(absser.ParseNode) (absser.Parsable, error) {
@@ -94,6 +96,12 @@ func (e *TestEntity) GetCreatedDateTime() *time.Time {
 }
 func (e *TestEntity) SetCreatedDateTime(value *time.Time) {
 	e.createdDateTime = value
+}
+func (e *TestEntity) GetSensitivity() *TestSensitivity {
+	return e.sensitivity
+}
+func (e *TestEntity) SetSensitivity(value *TestSensitivity) {
+	e.sensitivity = value
 }
 
 func CreateTestEntityFromDiscriminator(parseNode absser.ParseNode) (absser.Parsable, error) {
@@ -172,6 +180,16 @@ func (e *TestEntity) GetFieldDeserializers() map[string]func(absser.ParseNode) e
 		}
 		return nil
 	}
+	res["sensitivity"] = func(n absser.ParseNode) error {
+		val, err := n.GetEnumValue(ParseTestSensitivity)
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			e.SetSensitivity(val.(*TestSensitivity))
+		}
+		return nil
+	}
 	return res
 }
 
@@ -214,6 +232,13 @@ func (m *TestEntity) Serialize(writer absser.SerializationWriter) error {
 	}
 	{
 		err := writer.WriteTimeValue("createdDateTime", m.GetCreatedDateTime())
+		if err != nil {
+			return err
+		}
+	}
+	if m.GetSensitivity() != nil {
+		cast := (*m.GetSensitivity()).String()
+		err := writer.WriteStringValue("sensitivity", &cast)
 		if err != nil {
 			return err
 		}
