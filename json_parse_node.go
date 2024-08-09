@@ -153,7 +153,7 @@ func (n *JsonParseNode) SetValue(value interface{}) {
 
 // GetChildNode returns a new parse node for the given identifier.
 func (n *JsonParseNode) GetChildNode(index string) (absser.ParseNode, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if index == "" {
@@ -181,7 +181,7 @@ func (n *JsonParseNode) GetChildNode(index string) (absser.ParseNode, error) {
 
 // GetObjectValue returns the Parsable value from the node.
 func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Parsable, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if ctor == nil {
@@ -295,7 +295,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 
 // GetCollectionOfObjectValues returns the collection of Parsable values from the node.
 func (n *JsonParseNode) GetCollectionOfObjectValues(ctor absser.ParsableFactory) ([]absser.Parsable, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if ctor == nil {
@@ -322,7 +322,7 @@ func (n *JsonParseNode) GetCollectionOfObjectValues(ctor absser.ParsableFactory)
 
 // GetCollectionOfPrimitiveValues returns the collection of primitive values from the node.
 func (n *JsonParseNode) GetCollectionOfPrimitiveValues(targetType string) ([]interface{}, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if targetType == "" {
@@ -348,7 +348,7 @@ func (n *JsonParseNode) GetCollectionOfPrimitiveValues(targetType string) ([]int
 }
 
 func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	switch targetType {
@@ -387,7 +387,7 @@ func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error
 
 // GetCollectionOfEnumValues returns the collection of Enum values from the node.
 func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]interface{}, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if parser == nil {
@@ -414,7 +414,7 @@ func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]
 
 // GetStringValue returns a String value from the nodes.
 func (n *JsonParseNode) GetStringValue() (*string, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val string
@@ -428,7 +428,7 @@ func (n *JsonParseNode) GetStringValue() (*string, error) {
 
 // GetBoolValue returns a Bool value from the nodes.
 func (n *JsonParseNode) GetBoolValue() (*bool, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val bool
@@ -442,7 +442,7 @@ func (n *JsonParseNode) GetBoolValue() (*bool, error) {
 
 // GetInt8Value returns a int8 value from the nodes.
 func (n *JsonParseNode) GetInt8Value() (*int8, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val int8
@@ -456,7 +456,7 @@ func (n *JsonParseNode) GetInt8Value() (*int8, error) {
 
 // GetBoolValue returns a Bool value from the nodes.
 func (n *JsonParseNode) GetByteValue() (*byte, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val byte
@@ -470,7 +470,7 @@ func (n *JsonParseNode) GetByteValue() (*byte, error) {
 
 // GetFloat32Value returns a Float32 value from the nodes.
 func (n *JsonParseNode) GetFloat32Value() (*float32, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val float32
@@ -484,7 +484,7 @@ func (n *JsonParseNode) GetFloat32Value() (*float32, error) {
 
 // GetFloat64Value returns a Float64 value from the nodes.
 func (n *JsonParseNode) GetFloat64Value() (*float64, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val float64
@@ -498,7 +498,7 @@ func (n *JsonParseNode) GetFloat64Value() (*float64, error) {
 
 // GetInt32Value returns a Int32 value from the nodes.
 func (n *JsonParseNode) GetInt32Value() (*int32, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val int32
@@ -512,7 +512,7 @@ func (n *JsonParseNode) GetInt32Value() (*int32, error) {
 
 // GetInt64Value returns a Int64 value from the nodes.
 func (n *JsonParseNode) GetInt64Value() (*int64, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	var val int64
@@ -526,7 +526,7 @@ func (n *JsonParseNode) GetInt64Value() (*int64, error) {
 
 // GetTimeValue returns a Time value from the nodes.
 func (n *JsonParseNode) GetTimeValue() (*time.Time, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	v, err := n.GetStringValue()
@@ -547,7 +547,7 @@ func (n *JsonParseNode) GetTimeValue() (*time.Time, error) {
 
 // GetISODurationValue returns a ISODuration value from the nodes.
 func (n *JsonParseNode) GetISODurationValue() (*absser.ISODuration, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	v, err := n.GetStringValue()
@@ -562,7 +562,7 @@ func (n *JsonParseNode) GetISODurationValue() (*absser.ISODuration, error) {
 
 // GetTimeOnlyValue returns a TimeOnly value from the nodes.
 func (n *JsonParseNode) GetTimeOnlyValue() (*absser.TimeOnly, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	v, err := n.GetStringValue()
@@ -577,7 +577,7 @@ func (n *JsonParseNode) GetTimeOnlyValue() (*absser.TimeOnly, error) {
 
 // GetDateOnlyValue returns a DateOnly value from the nodes.
 func (n *JsonParseNode) GetDateOnlyValue() (*absser.DateOnly, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	v, err := n.GetStringValue()
@@ -592,7 +592,7 @@ func (n *JsonParseNode) GetDateOnlyValue() (*absser.DateOnly, error) {
 
 // GetUUIDValue returns a UUID value from the nodes.
 func (n *JsonParseNode) GetUUIDValue() (*uuid.UUID, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	v, err := n.GetStringValue()
@@ -608,7 +608,7 @@ func (n *JsonParseNode) GetUUIDValue() (*uuid.UUID, error) {
 
 // GetEnumValue returns a Enum value from the nodes.
 func (n *JsonParseNode) GetEnumValue(parser absser.EnumFactory) (interface{}, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	if parser == nil {
@@ -626,7 +626,7 @@ func (n *JsonParseNode) GetEnumValue(parser absser.EnumFactory) (interface{}, er
 
 // GetByteArrayValue returns a ByteArray value from the nodes.
 func (n *JsonParseNode) GetByteArrayValue() ([]byte, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	s, err := n.GetStringValue()
@@ -641,7 +641,7 @@ func (n *JsonParseNode) GetByteArrayValue() ([]byte, error) {
 
 // GetRawValue returns a ByteArray value from the nodes.
 func (n *JsonParseNode) GetRawValue() (interface{}, error) {
-	if isNilNode(n) {
+	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
 	switch v := n.value.(type) {

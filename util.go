@@ -145,8 +145,3 @@ func isCompatibleInt(in interface{}, tp reflect.Type) bool {
 func hasDecimalPlace(value float64) bool {
 	return value != float64(int64(value))
 }
-
-// isNilNode checks if the JsonParseNode is nil.
-func isNilNode(n *JsonParseNode) bool {
-	return isNil(n) || isNil(n.value)
-}
