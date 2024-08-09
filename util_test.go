@@ -37,6 +37,38 @@ func TestIsCompatible(t *testing.T) {
 	}
 }
 
+func TestIsNil(t *testing.T) {
+	tests := []struct {
+		Title    string
+		Input    interface{}
+		Expected bool
+	}{
+		{"nil value", nil, true},
+		{"non-nil int", 42, false},
+		{"nil pointer", (*int)(nil), true},
+		{"non-nil pointer", new(int), false},
+		{"nil interface", interface{}(nil), true},
+		{"non-nil interface", interface{}(42), false},
+		{"nil slice", ([]int)(nil), true},
+		{"non-nil slice", []int{1, 2, 3}, false},
+		{"nil map", (map[string]int)(nil), true},
+		{"non-nil map", map[string]int{"a": 1}, false},
+		{"nil chan", (chan int)(nil), true},
+		{"non-nil chan", make(chan int), false},
+		{"nil func", (func())(nil), true},
+		{"non-nil func", func() {}, false},
+		{"nested nil pointer", (**int)(nil), true},
+		{"nested non-nil pointer", func() **int { var i int; p := &i; return &p }(), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Title, func(t *testing.T) {
+			got := isNil(tt.Input)
+			assert.Equal(t, tt.Expected, got)
+		})
+	}
+}
+
 func TestAs(t *testing.T) {
 	cases := []struct {
 		Title    string
@@ -54,15 +86,6 @@ func TestAs(t *testing.T) {
 			Error:    nil,
 		},
 		{
-			Title: "Interface",
-			InputVal: []interface{}{
-				int8(1),
-				nil,
-			},
-			Expected: interface{}(int8(1)),
-			Error:    nil,
-		},
-		{
 			Title: "Incompatible",
 			InputVal: []interface{}{
 				"I am a string",
@@ -70,6 +93,42 @@ func TestAs(t *testing.T) {
 			},
 			Expected: int8(0),
 			Error:    errors.New("value 'I am a string' is not compatible with type int8"),
+		},
+		{
+			Title: "Untyped Nil - In",
+			InputVal: []interface{}{
+				nil,
+				int8(0),
+			},
+			Expected: int8(0),
+			Error:    nil,
+		},
+		{
+			Title: "Typed Nil - In",
+			InputVal: []interface{}{
+				(*string)(nil),
+				int8(0),
+			},
+			Expected: int8(0),
+			Error:    nil,
+		},
+		{
+			Title: "Untyped Nil - Out",
+			InputVal: []interface{}{
+				int8(1),
+				nil,
+			},
+			Expected: nil,
+			Error:    errors.New("out is not pointer or is nil"),
+		},
+		{
+			Title: "Typed Nil - Out",
+			InputVal: []interface{}{
+				int8(0),
+				(*int8)(nil),
+			},
+			Expected: (*int8)(nil),
+			Error:    errors.New("out is not pointer or is nil"),
 		},
 	}
 

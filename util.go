@@ -44,10 +44,29 @@ func isCompatible(value interface{}, tp reflect.Type) bool {
 	return reflect.TypeOf(value).ConvertibleTo(tp)
 }
 
+// isNil checks if a value is nil or a nil interface, including nested pointers.
+func isNil(a interface{}) bool {
+	if a == nil {
+		return true
+	}
+	val := reflect.ValueOf(a)
+	for val.Kind() == reflect.Ptr || val.Kind() == reflect.Interface {
+		if val.IsNil() {
+			return true
+		}
+		val = val.Elem()
+	}
+	switch val.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
+		return val.IsNil()
+	}
+	return false
+}
+
 // as converts the value to the type T.
 func as[T any](in interface{}, out T) error {
 	// No point in trying anything if already nil
-	if in == nil {
+	if isNil(in) {
 		return nil
 	}
 
@@ -59,7 +78,7 @@ func as[T any](in interface{}, out T) error {
 	}
 
 	outVal := reflect.ValueOf(out)
-	if outVal.Kind() != reflect.Pointer || outVal.IsNil() {
+	if outVal.Kind() != reflect.Pointer || isNil(out) {
 		return fmt.Errorf("out is not pointer or is nil")
 	}
 
@@ -125,4 +144,9 @@ func isCompatibleInt(in interface{}, tp reflect.Type) bool {
 // Otherwise, it returns false.
 func hasDecimalPlace(value float64) bool {
 	return value != float64(int64(value))
+}
+
+// isNilNode checks if the JsonParseNode is nil.
+func isNilNode(n *JsonParseNode) bool {
+	return n == nil || n.value == nil
 }
