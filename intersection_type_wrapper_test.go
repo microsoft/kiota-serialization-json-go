@@ -31,7 +31,7 @@ func TestItParsesIntersectionTypeComplexProperty1(t *testing.T) {
 }
 
 func TestItParsesIntersectionTypeComplexProperty2(t *testing.T) {
-	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": 10}"
+	source := "{\"displayName\":\"McGill\",\"officeLocation\":\"Montreal\", \"id\": \"10\"}"
 	sourceArray := []byte(source)
 	parseNode, err := NewJsonParseNode(sourceArray)
 
@@ -39,17 +39,16 @@ func TestItParsesIntersectionTypeComplexProperty2(t *testing.T) {
 		t.Error(err)
 	}
 	result, err := parseNode.GetObjectValue(internal.CreateIntersectionTypeMockFromDiscriminator)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	cast, ok := result.(internal.IntersectionTypeMockable)
+	assert.NotNil(t, cast)
 	assert.True(t, ok)
 	assert.NotNil(t, cast.GetComposedType1())
 	assert.NotNil(t, cast.GetComposedType2())
 	assert.Nil(t, cast.GetStringValue())
 	assert.Nil(t, cast.GetComposedType3())
-	assert.Nil(t, cast.GetComposedType1().GetId())
+	assert.NotNil(t, cast.GetComposedType1().GetId())
 	assert.Nil(t, cast.GetComposedType2().GetId()) // it's expected to be null since we have conflicting properties here and the parser will only try one to avoid having to brute its way through
 	assert.Equal(t, "McGill", *cast.GetComposedType2().GetDisplayName())
 }
