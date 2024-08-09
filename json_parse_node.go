@@ -45,7 +45,7 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 		if err != nil {
 			return nil, err
 		}
-		switch token.(type) {
+		switch val := token.(type) {
 		case json.Delim:
 			switch token.(json.Delim) {
 			case '{':
@@ -99,43 +99,43 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 			}
 			return c, nil
 		case string:
-			v := token.(string)
+			v := val
 			c := &JsonParseNode{}
 			c.SetValue(&v)
 			return c, nil
 		case bool:
 			c := &JsonParseNode{}
-			v := token.(bool)
+			v := val
 			c.SetValue(&v)
 			return c, nil
 		case int8:
 			c := &JsonParseNode{}
-			v := token.(int8)
-			c.SetValue(&v)
-			return c, nil
-		case byte:
-			c := &JsonParseNode{}
-			v := token.(byte)
-			c.SetValue(&v)
-			return c, nil
-		case float64:
-			c := &JsonParseNode{}
-			v := token.(float64)
-			c.SetValue(&v)
-			return c, nil
-		case float32:
-			c := &JsonParseNode{}
-			v := token.(float32)
+			v := val
 			c.SetValue(&v)
 			return c, nil
 		case int32:
 			c := &JsonParseNode{}
-			v := token.(int32)
+			v := val
 			c.SetValue(&v)
 			return c, nil
 		case int64:
 			c := &JsonParseNode{}
-			v := token.(int64)
+			v := val
+			c.SetValue(&v)
+			return c, nil
+		case float32:
+			c := &JsonParseNode{}
+			v := val
+			c.SetValue(&v)
+			return c, nil
+		case float64:
+			c := &JsonParseNode{}
+			v := val
+			c.SetValue(&v)
+			return c, nil
+		case byte:
+			c := &JsonParseNode{}
+			v := val
 			c.SetValue(&v)
 			return c, nil
 		case nil:
@@ -343,6 +343,7 @@ func (n *JsonParseNode) GetCollectionOfPrimitiveValues(targetType string) ([]int
 	}
 	return result, nil
 }
+
 func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error) {
 	switch targetType {
 	case "string":
@@ -407,86 +408,90 @@ func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]
 
 // GetStringValue returns a String value from the nodes.
 func (n *JsonParseNode) GetStringValue() (*string, error) {
-	if n == nil || n.value == nil {
-		return nil, nil
+	var val string
+
+	if err := as(n.value, &val); err != nil {
+		return nil, err
 	}
-	res, ok := n.value.(*string)
-	if ok {
-		return res, nil
-	} else {
-		return nil, nil
-	}
+
+	return &val, nil
 }
 
 // GetBoolValue returns a Bool value from the nodes.
 func (n *JsonParseNode) GetBoolValue() (*bool, error) {
-	if n == nil || n.value == nil {
-		return nil, nil
+	var val bool
+
+	if err := as(n.value, &val); err != nil {
+		return nil, err
 	}
-	return n.value.(*bool), nil
+
+	return &val, nil
 }
 
 // GetInt8Value returns a int8 value from the nodes.
 func (n *JsonParseNode) GetInt8Value() (*int8, error) {
-	if n == nil || n.value == nil {
-		return nil, nil
+	var val int8
+
+	if err := as(n.value, &val); err != nil {
+		return nil, err
 	}
-	return n.value.(*int8), nil
+
+	return &val, nil
 }
 
 // GetBoolValue returns a Bool value from the nodes.
 func (n *JsonParseNode) GetByteValue() (*byte, error) {
-	if n == nil || n.value == nil {
-		return nil, nil
+	var val byte
+
+	if err := as(n.value, &val); err != nil {
+		return nil, err
 	}
-	return n.value.(*byte), nil
+
+	return &val, nil
 }
 
 // GetFloat32Value returns a Float32 value from the nodes.
 func (n *JsonParseNode) GetFloat32Value() (*float32, error) {
-	v, err := n.GetFloat64Value()
-	if err != nil {
+	var val float32
+
+	if err := as(n.value, &val); err != nil {
 		return nil, err
 	}
-	if v == nil {
-		return nil, nil
-	}
-	cast := float32(*v)
-	return &cast, nil
+
+	return &val, nil
 }
 
 // GetFloat64Value returns a Float64 value from the nodes.
 func (n *JsonParseNode) GetFloat64Value() (*float64, error) {
-	if n == nil || n.value == nil {
-		return nil, nil
+	var val float64
+
+	if err := as(n.value, &val); err != nil {
+		return nil, err
 	}
-	return n.value.(*float64), nil
+
+	return &val, nil
 }
 
 // GetInt32Value returns a Int32 value from the nodes.
 func (n *JsonParseNode) GetInt32Value() (*int32, error) {
-	v, err := n.GetFloat64Value()
-	if err != nil {
+	var val int32
+
+	if err := as(n.value, &val); err != nil {
 		return nil, err
 	}
-	if v == nil {
-		return nil, nil
-	}
-	cast := int32(*v)
-	return &cast, nil
+
+	return &val, nil
 }
 
 // GetInt64Value returns a Int64 value from the nodes.
 func (n *JsonParseNode) GetInt64Value() (*int64, error) {
-	v, err := n.GetFloat64Value()
-	if err != nil {
+	var val int64
+
+	if err := as(n.value, &val); err != nil {
 		return nil, err
 	}
-	if v == nil {
-		return nil, nil
-	}
-	cast := int64(*v)
-	return &cast, nil
+
+	return &val, nil
 }
 
 // GetTimeValue returns a Time value from the nodes.
