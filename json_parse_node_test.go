@@ -236,7 +236,7 @@ func TestParsingTime(t *testing.T) {
 	assert.Nil(t, err)
 	time1, err := someProp.GetTimeValue()
 	assert.Nil(t, err)
-	assert.Contains(t, time1.String(), "2023-07-12 08:54:24 +")
+	assert.Regexp(t, "^2023-07-12 08:54:24 [-+]", time1.String())
 
 	someProp2, err := parseNode.GetChildNode("withZone")
 	assert.Nil(t, err)
