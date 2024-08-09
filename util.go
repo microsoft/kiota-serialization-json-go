@@ -148,5 +148,5 @@ func hasDecimalPlace(value float64) bool {
 
 // isNilNode checks if the JsonParseNode is nil.
 func isNilNode(n *JsonParseNode) bool {
-	return n == nil || n.value == nil
+	return isNil(n) || isNil(n.value)
 }
