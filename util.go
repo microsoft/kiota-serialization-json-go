@@ -81,6 +81,11 @@ func as[T any](in interface{}, out T) error {
 
 // isNumericType checks if the given type is a numeric type.
 func isNumericType(in interface{}) bool {
+
+	if in == nil {
+		return false
+	}
+
 	tp, ok := in.(reflect.Type)
 	if !ok {
 		tp = reflect.TypeOf(in)

@@ -156,6 +156,21 @@ func TestIsNumericType(t *testing.T) {
 			InputVal: true,
 			Expected: false,
 		},
+		{
+			Title:    "Untyped Nil",
+			InputVal: nil,
+			Expected: false,
+		},
+		{
+			Title:    "Typed Nil",
+			InputVal: (*int)(nil),
+			Expected: false,
+		},
+		{
+			Title:    "Interface",
+			InputVal: interface{}(int(1)),
+			Expected: true,
+		},
 	}
 
 	for _, test := range cases {
