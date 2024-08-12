@@ -146,8 +146,8 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 	return nil, nil
 }
 
-// setValue is obsolete, parse nodes are not meant to be settable externally
-func (n *JsonParseNode) SearchetValue(value interface{}) {
+// SetValue is obsolete, parse nodes are not meant to be settable externally
+func (n *JsonParseNode) SetValue(value interface{}) {
 	n.setValue(value)
 }
 
