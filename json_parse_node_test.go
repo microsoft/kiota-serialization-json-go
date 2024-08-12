@@ -341,7 +341,7 @@ func TestJsonGetStringValue(t *testing.T) {
 			Title:    "Integer",
 			Input:    []byte(`1`),
 			Expected: (*string)(nil),
-			Error:    errors.New("value '1' is not compatible with type string"),
+			Error:    errors.New("type '*float64' is not compatible with type string"),
 		},
 	}
 
@@ -381,13 +381,13 @@ func TestJsonGetBoolValue(t *testing.T) {
 			Title:    "Integer",
 			Input:    []byte(`1`),
 			Expected: (*bool)(nil),
-			Error:    errors.New("value '1' is not compatible with type bool"),
+			Error:    errors.New("type '*float64' is not compatible with type bool"),
 		},
 		{
 			Title:    "String",
 			Input:    []byte(`"true"`),
 			Expected: (*bool)(nil),
-			Error:    errors.New("value 'true' is not compatible with type bool"),
+			Error:    errors.New("type '*string' is not compatible with type bool"),
 		},
 	}
 

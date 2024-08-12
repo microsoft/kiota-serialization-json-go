@@ -417,13 +417,12 @@ func (n *JsonParseNode) GetStringValue() (*string, error) {
 	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
-	var val string
 
-	if err := as(n.value, &val); err != nil {
-		return nil, err
+	val, ok := n.value.(*string)
+	if !ok {
+		return nil, fmt.Errorf("type '%T' is not compatible with type string", n.value)
 	}
-
-	return &val, nil
+	return val, nil
 }
 
 // GetBoolValue returns a Bool value from the nodes.
@@ -431,13 +430,12 @@ func (n *JsonParseNode) GetBoolValue() (*bool, error) {
 	if isNil(n) || isNil(n.value) {
 		return nil, nil
 	}
-	var val bool
 
-	if err := as(n.value, &val); err != nil {
-		return nil, err
+	val, ok := n.value.(*bool)
+	if !ok {
+		return nil, fmt.Errorf("type '%T' is not compatible with type bool", n.value)
 	}
-
-	return &val, nil
+	return val, nil
 }
 
 // GetInt8Value returns a int8 value from the nodes.
