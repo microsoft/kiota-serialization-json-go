@@ -88,11 +88,11 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 			i, err := number.Int64()
 			c := &JsonParseNode{}
 			if err == nil {
-				c.SetValue(&i)
+				c.setValue(&i)
 			} else {
 				f, err := number.Float64()
 				if err == nil {
-					c.SetValue(&f)
+					c.setValue(&f)
 				} else {
 					return nil, err
 				}
@@ -101,42 +101,42 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 		case string:
 			v := token.(string)
 			c := &JsonParseNode{}
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case bool:
 			c := &JsonParseNode{}
 			v := token.(bool)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case int8:
 			c := &JsonParseNode{}
 			v := token.(int8)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case byte:
 			c := &JsonParseNode{}
 			v := token.(byte)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case float64:
 			c := &JsonParseNode{}
 			v := token.(float64)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case float32:
 			c := &JsonParseNode{}
 			v := token.(float32)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case int32:
 			c := &JsonParseNode{}
 			v := token.(int32)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case int64:
 			c := &JsonParseNode{}
 			v := token.(int64)
-			c.SetValue(&v)
+			c.setValue(&v)
 			return c, nil
 		case nil:
 			return nil, nil
@@ -146,8 +146,13 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 	return nil, nil
 }
 
-// SetValue sets the value represented by the node
-func (n *JsonParseNode) SetValue(value interface{}) {
+// setValue is obsolete, parse nodes are not meant to be settable externally
+func (n *JsonParseNode) SearchetValue(value interface{}) {
+	n.setValue(value)
+}
+
+// setValue sets the value represented by the node
+func (n *JsonParseNode) setValue(value interface{}) {
 	n.value = value
 }
 
