@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2024-08-13
+
+### Changed
+
+- Modified how number values are derived, allowing values to be cast as the various types.
+
+### Fixed
+
+- Panicing when type is asserted to be what it isn't.
+
 ## [1.0.7] - 2024-02-29
 
 ### Added
@@ -135,7 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.5] - 2022-07-12
 
-- Fixed bug where string literals of `\t` and `\r` would result in generating an invalid JSON. 
+- Fixed bug where string literals of `\t` and `\r` would result in generating an invalid JSON.
 
 ### Changed
 
@@ -161,14 +171,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
- - Updated supported types for Additional Data, unsupported types now throwing an error instead of ignoring.
- - Changed logic that trims excessive commas to be called only once on serialization.
+- Updated supported types for Additional Data, unsupported types now throwing an error instead of ignoring.
+- Changed logic that trims excessive commas to be called only once on serialization.
 
 ## [0.5.0] - 2022-05-26
 
 ### Changed
 
- - Updated reference to abstractions to support enum responses.
+- Updated reference to abstractions to support enum responses.
 
 ## [0.4.0] - 2022-05-19
 
