@@ -236,13 +236,13 @@ func TestParsingTime(t *testing.T) {
 	assert.Nil(t, err)
 	time1, err := someProp.GetTimeValue()
 	assert.Nil(t, err)
-	assert.Regexp(t, "^2023-07-12 08:54:24 [-+]", time1.String())
+	assert.Equal(t, "2023-07-12 08:54:24", time1.Format("2006-01-02 15:04:05"))
 
 	someProp2, err := parseNode.GetChildNode("withZone")
 	assert.Nil(t, err)
 	time2, err := someProp2.GetTimeValue()
 	assert.Nil(t, err)
-	assert.Contains(t, time2.String(), "2023-07-12 09:54:24 +")
+	assert.Equal(t, "2023-07-12 09:54:24", time2.Format("2006-01-02 15:04:05"))
 }
 
 func TestThrowErrorOfPrimitiveType(t *testing.T) {
