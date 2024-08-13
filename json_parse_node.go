@@ -36,6 +36,7 @@ func NewJsonParseNode(content []byte) (*JsonParseNode, error) {
 	value, err := loadJsonTree(decoder)
 	return value, err
 }
+
 func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 	for {
 		token, err := decoder.Token()
@@ -45,7 +46,7 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 		if err != nil {
 			return nil, err
 		}
-		switch val := token.(type) {
+		switch token.(type) {
 		case json.Delim:
 			switch token.(json.Delim) {
 			case '{':
@@ -99,7 +100,7 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 			}
 			return c, nil
 		case string:
-			v := val
+			v := token.(string)
 			c := &JsonParseNode{}
 			c.setValue(&v)
 			return c, nil
@@ -113,12 +114,12 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 			v := token.(int8)
 			c.setValue(&v)
 			return c, nil
-		case int32:
+		case byte:
 			c := &JsonParseNode{}
 			v := token.(byte)
 			c.setValue(&v)
 			return c, nil
-		case int64:
+		case float64:
 			c := &JsonParseNode{}
 			v := token.(float64)
 			c.setValue(&v)
@@ -128,12 +129,12 @@ func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
 			v := token.(float32)
 			c.setValue(&v)
 			return c, nil
-		case float64:
+		case int32:
 			c := &JsonParseNode{}
 			v := token.(int32)
 			c.setValue(&v)
 			return c, nil
-		case byte:
+		case int64:
 			c := &JsonParseNode{}
 			v := token.(int64)
 			c.setValue(&v)
