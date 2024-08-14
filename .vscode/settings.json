@@ -1,0 +1,11 @@
+{
+  "go.lintTool": "golangci-lint",
+  "go.formatFlags": ["-s", "-w"],
+  "go.lintOnSave": "package",
+  "go.lintFlags": ["-c", "~/.dotfiles/.golangci.yml", "--issues-exit-code=0"],
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "go.coverOnSave": true,
+  "go.coverageOptions": "showBothCoveredAndUncoveredCode",
+  "go.testOnSave": true
+}

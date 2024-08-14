@@ -1,6 +1,8 @@
 package jsonserialization
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/microsoft/kiota-serialization-json-go/internal"
@@ -318,6 +320,418 @@ func TestUntypedJsonObject(t *testing.T) {
 			cellValue := cell.(*absser.UntypedDouble)
 			assert.NotNil(t, cellValue)
 		}
+	}
+}
+
+func TestJsonGetStringValue(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`"I am a string"`),
+			Expected: "I am a string",
+			Error:    nil,
+		},
+		{
+			//Intentionally does not work, see https://github.com/microsoft/kiota-serialization-json-go/issues/142
+			Title:    "Integer",
+			Input:    []byte(`1`),
+			Expected: (*string)(nil),
+			Error:    errors.New("type '*float64' is not compatible with type string"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetStringValue()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetBoolValue(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`true`),
+			Expected: true,
+			Error:    nil,
+		},
+		{
+			Title:    "Integer",
+			Input:    []byte(`1`),
+			Expected: (*bool)(nil),
+			Error:    errors.New("type '*float64' is not compatible with type bool"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"true"`),
+			Expected: (*bool)(nil),
+			Error:    errors.New("type '*string' is not compatible with type bool"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetBoolValue()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetInt8Value(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: int8(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value 'true' is not compatible with type int8"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '1' is not compatible with type int8"),
+		},
+		{
+			Title:    "Float",
+			Input:    []byte(`1.1`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '1.1' is not compatible with type int8"),
+		},
+		{
+			Title:    "Too Big",
+			Input:    []byte(`129`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '129' is not compatible with type int8"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetInt8Value()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetByteValue(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: uint8(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*uint8)(nil),
+			Error:    errors.New("value 'true' is not compatible with type uint8"),
+		},
+		{
+			Title:    "Float",
+			Input:    []byte(`1.1`),
+			Expected: (*uint8)(nil),
+			Error:    errors.New("value '1.1' is not compatible with type uint8"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: (*uint8)(nil),
+			Error:    errors.New("value '1' is not compatible with type uint8"),
+		},
+		{
+			Title:    "Too Big",
+			Input:    []byte(`3.40283e+38`),
+			Expected: (*uint8)(nil),
+			Error:    errors.New("value '3.40283e+38' is not compatible with type uint8"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetByteValue()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetFloat32Value(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: float32(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*float32)(nil),
+			Error:    errors.New("value 'true' is not compatible with type float32"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: (*float32)(nil),
+			Error:    errors.New("value '1' is not compatible with type float32"),
+		},
+		{
+			Title:    "Too Big",
+			Input:    []byte(`3.40283e+38`),
+			Expected: (*float32)(nil),
+			Error:    errors.New("value '3.40283e+38' is not compatible with type float32"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetFloat32Value()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetFloat64Value(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: float64(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*float64)(nil),
+			Error:    errors.New("value 'true' is not compatible with type float64"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: (*float64)(nil),
+			Error:    errors.New("value '1' is not compatible with type float64"),
+		},
+		//NOTE: no point in checking too big, the STD JSON encoder will error out first :)
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetFloat64Value()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetInt32Value(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: int32(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value 'true' is not compatible with type int32"),
+		},
+		{
+			Title:    "Float",
+			Input:    []byte(`1.1`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '1.1' is not compatible with type int32"),
+		},
+		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '1' is not compatible with type int32"),
+		},
+		{
+			Title:    "Too Big",
+			Input:    []byte(`3.40283e+38`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '3.40283e+38' is not compatible with type int32"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetInt32Value()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
+	}
+}
+
+func TestJsonGetInt64Value(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    []byte
+		Expected interface{}
+		Error    error
+	}{
+		{
+			Title:    "Valid",
+			Input:    []byte(`1`),
+			Expected: int64(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Bool",
+			Input:    []byte(`true`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value 'true' is not compatible with type int64"),
+		},
+		{
+			Title:    "Float",
+			Input:    []byte(`1.1`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value '1.1' is not compatible with type int64"),
+		},
+		{
+			Title:    "Too Big",
+			Input:    []byte(`3.40283e+38`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value '3.40283e+38' is not compatible with type int64"),
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Title, func(t *testing.T) {
+			var val any
+
+			node, err := NewJsonParseNode(test.Input)
+			assert.Nil(t, err)
+
+			val, err = node.GetInt64Value()
+
+			assert.Equal(t, test.Error, err)
+			v := reflect.ValueOf(val)
+			if !v.IsNil() && v.Kind() == reflect.Ptr {
+				val = v.Elem().Interface()
+			}
+			assert.Equal(t, test.Expected, val)
+		})
 	}
 }
 
