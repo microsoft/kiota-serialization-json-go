@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.9](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.0.8...v1.0.9) (2024-12-17)
+
+
+### Bug Fixes
+
+* changelog cleanup ([1c16092](https://github.com/microsoft/kiota-serialization-json-go/commit/1c1609263beb65dedf4793304411aa22e8cf768e))
+
 ## [1.0.8] - 2024-08-13
 
 ### Changed
