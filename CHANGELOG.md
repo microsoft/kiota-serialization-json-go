@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.0.9...v1.1.0) (2025-03-13)
+
+
+### Features
+
+* upgrades required go version from go1.18 to go 1.22 ([22ec699](https://github.com/microsoft/kiota-serialization-json-go/commit/22ec69982c170452e7aa565465f4729effbe9695))
+
 ## [1.0.9](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.0.8...v1.0.9) (2024-12-17)
 
 
