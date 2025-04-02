@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.1...v1.1.2) (2025-04-02)
+
+
+### Bug Fixes
+
+* removes common go dependency ([93eee3a](https://github.com/microsoft/kiota-serialization-json-go/commit/93eee3ae3298de814ea2a4d034a65aa925ccef41))
+* removes common go dependency ([5c4a75c](https://github.com/microsoft/kiota-serialization-json-go/commit/5c4a75c9a22d47d2ae4ef82016526324f268169e))
+
 ## [1.1.1](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.0...v1.1.1) (2025-03-24)
 
 
