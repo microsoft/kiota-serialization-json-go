@@ -24,6 +24,55 @@ type JsonParseNode struct {
 	onAfterAssignFieldValues  absser.ParsableAction
 }
 
+// tokenToValue converts a JSON token to either a raw primitive value (to avoid JsonParseNode
+// allocation for primitives) or a *JsonParseNode for complex types (objects and arrays).
+// This is used when building parse trees to reduce allocations.
+func tokenToValue(decoder *json.Decoder, token json.Token) (interface{}, error) {
+	switch t := token.(type) {
+	case json.Delim:
+		node, err := loadJsonTreeFromToken(decoder, t)
+		return node, err
+	case float64:
+		f := t
+		return &f, nil
+	case string:
+		s := t
+		return &s, nil
+	case bool:
+		b := t
+		return &b, nil
+	case json.Number:
+		i, err := t.Int64()
+		if err == nil {
+			return &i, nil
+		}
+		f, err := t.Float64()
+		if err == nil {
+			return &f, nil
+		}
+		return nil, errors.New("failed to parse number token")
+	case int8:
+		v := t
+		return &v, nil
+	case byte:
+		v := t
+		return &v, nil
+	case float32:
+		v := t
+		return &v, nil
+	case int32:
+		v := t
+		return &v, nil
+	case int64:
+		v := t
+		return &v, nil
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown token type during parsing: %T", token)
+	}
+}
+
 // NewJsonParseNode creates a new JsonParseNode.
 func NewJsonParseNode(content []byte) (*JsonParseNode, error) {
 	if len(content) == 0 {
@@ -38,111 +87,100 @@ func NewJsonParseNode(content []byte) (*JsonParseNode, error) {
 }
 
 func loadJsonTree(decoder *json.Decoder) (*JsonParseNode, error) {
-	for {
-		token, err := decoder.Token()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		switch token.(type) {
-		case json.Delim:
-			switch token.(json.Delim) {
-			case '{':
-				v := make(map[string]*JsonParseNode)
-				for decoder.More() {
-					key, err := decoder.Token()
-					if err != nil {
-						return nil, err
-					}
-					keyStr, ok := key.(string)
-					if !ok {
-						return nil, errors.New("key is not a string")
-					}
-					childNode, err := loadJsonTree(decoder)
-					if err != nil {
-						return nil, err
-					}
-					v[keyStr] = childNode
-				}
-				decoder.Token() // skip the closing curly
-				result := &JsonParseNode{value: v}
-				return result, nil
-			case '[':
-				v := make([]*JsonParseNode, 0)
-				for decoder.More() {
-					childNode, err := loadJsonTree(decoder)
-					if err != nil {
-						return nil, err
-					}
-					v = append(v, childNode)
-				}
-				decoder.Token() // skip the closing bracket
-				result := &JsonParseNode{value: v}
-				return result, nil
-			case ']':
-			case '}':
-			}
-		case json.Number:
-			number := token.(json.Number)
-			i, err := number.Int64()
-			c := &JsonParseNode{}
-			if err == nil {
-				c.setValue(&i)
-			} else {
-				f, err := number.Float64()
-				if err == nil {
-					c.setValue(&f)
-				} else {
+	token, err := decoder.Token()
+	if err == io.EOF {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return loadJsonTreeFromToken(decoder, token)
+}
+
+// loadJsonTreeFromToken builds a JsonParseNode from an already-consumed token.
+// For object and array delimiters, it reads the remaining tokens from the decoder.
+// For primitive tokens it wraps the value directly in a JsonParseNode.
+// Primitive values inside objects and arrays are stored as raw values (not wrapped
+// in *JsonParseNode) to reduce allocations.
+func loadJsonTreeFromToken(decoder *json.Decoder, token json.Token) (*JsonParseNode, error) {
+	switch t := token.(type) {
+	case json.Delim:
+		switch t {
+		case '{':
+			v := make(map[string]interface{})
+			for decoder.More() {
+				key, err := decoder.Token()
+				if err != nil {
 					return nil, err
 				}
+				keyStr, ok := key.(string)
+				if !ok {
+					return nil, errors.New("key is not a string")
+				}
+				valToken, err := decoder.Token()
+				if err != nil {
+					return nil, err
+				}
+				childValue, err := tokenToValue(decoder, valToken)
+				if err != nil {
+					return nil, err
+				}
+				v[keyStr] = childValue
 			}
-			return c, nil
-		case string:
-			v := token.(string)
-			c := &JsonParseNode{}
-			c.setValue(&v)
-			return c, nil
-		case bool:
-			c := &JsonParseNode{}
-			v := token.(bool)
-			c.setValue(&v)
-			return c, nil
-		case int8:
-			c := &JsonParseNode{}
-			v := token.(int8)
-			c.setValue(&v)
-			return c, nil
-		case byte:
-			c := &JsonParseNode{}
-			v := token.(byte)
-			c.setValue(&v)
-			return c, nil
-		case float64:
-			c := &JsonParseNode{}
-			v := token.(float64)
-			c.setValue(&v)
-			return c, nil
-		case float32:
-			c := &JsonParseNode{}
-			v := token.(float32)
-			c.setValue(&v)
-			return c, nil
-		case int32:
-			c := &JsonParseNode{}
-			v := token.(int32)
-			c.setValue(&v)
-			return c, nil
-		case int64:
-			c := &JsonParseNode{}
-			v := token.(int64)
-			c.setValue(&v)
-			return c, nil
-		case nil:
-			return nil, nil
-		default:
+			decoder.Token() // skip the closing curly
+			return &JsonParseNode{value: v}, nil
+		case '[':
+			v := make([]interface{}, 0)
+			for decoder.More() {
+				elemToken, err := decoder.Token()
+				if err != nil {
+					return nil, err
+				}
+				elem, err := tokenToValue(decoder, elemToken)
+				if err != nil {
+					return nil, err
+				}
+				v = append(v, elem)
+			}
+			decoder.Token() // skip the closing bracket
+			return &JsonParseNode{value: v}, nil
 		}
+	case json.Number:
+		i, err := t.Int64()
+		if err == nil {
+			return &JsonParseNode{value: &i}, nil
+		}
+		f, err := t.Float64()
+		if err == nil {
+			return &JsonParseNode{value: &f}, nil
+		}
+		return nil, errors.New("failed to parse number")
+	case string:
+		s := t
+		return &JsonParseNode{value: &s}, nil
+	case bool:
+		b := t
+		return &JsonParseNode{value: &b}, nil
+	case int8:
+		v := t
+		return &JsonParseNode{value: &v}, nil
+	case byte:
+		v := t
+		return &JsonParseNode{value: &v}, nil
+	case float64:
+		f := t
+		return &JsonParseNode{value: &f}, nil
+	case float32:
+		v := t
+		return &JsonParseNode{value: &v}, nil
+	case int32:
+		v := t
+		return &JsonParseNode{value: &v}, nil
+	case int64:
+		v := t
+		return &JsonParseNode{value: &v}, nil
+	case nil:
+		return nil, nil
 	}
 	return nil, nil
 }
@@ -165,12 +203,28 @@ func (n *JsonParseNode) GetChildNode(index string) (absser.ParseNode, error) {
 	if index == "" {
 		return nil, errors.New("index is empty")
 	}
-	childNodes, ok := n.value.(map[string]*JsonParseNode)
+	childNodes, ok := n.value.(map[string]interface{})
 	if !ok || len(childNodes) == 0 {
 		return nil, nil
 	}
 
-	childNode := childNodes[index]
+	rawChild, exists := childNodes[index]
+	if !exists {
+		return nil, nil
+	}
+
+	var childNode *JsonParseNode
+	if rawChild == nil {
+		// JSON null value: return a typed nil so callers can still invoke methods on the
+		// returned ParseNode interface without a nil-interface panic.
+		return (*JsonParseNode)(nil), nil
+	} else if jn, ok := rawChild.(*JsonParseNode); ok {
+		childNode = jn
+	} else {
+		// Raw primitive value – wrap on demand to avoid pre-allocation
+		childNode = &JsonParseNode{value: rawChild}
+	}
+
 	if childNode != nil {
 		err := childNode.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
 		if err != nil {
@@ -215,37 +269,48 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 			return absser.NewUntypedLong(*value), nil
 		case nil:
 			return absser.NewUntypedNull(), nil
-		case map[string]*JsonParseNode:
+		case map[string]interface{}:
 			properties := make(map[string]absser.UntypedNodeable)
-			for key, value := range value {
-				parsable, err := value.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
-				if err != nil {
-					return nil, errors.New("cannot parse object value")
-				}
-				if parsable == nil {
+			for key, rawVal := range value {
+				var parsable absser.Parsable
+				if rawVal == nil {
 					parsable = absser.NewUntypedNull()
+				} else if jn, ok := rawVal.(*JsonParseNode); ok {
+					parsable, err = jn.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+					if err != nil {
+						return nil, errors.New("cannot parse object value")
+					}
+					if parsable == nil {
+						parsable = absser.NewUntypedNull()
+					}
+				} else {
+					parsable = rawToUntypedNodeable(rawVal)
 				}
-				property, ok := parsable.(absser.UntypedNodeable)
-				if ok {
+				if property, ok := parsable.(absser.UntypedNodeable); ok {
 					properties[key] = property
 				}
 			}
 			return absser.NewUntypedObject(properties), nil
-		case []*JsonParseNode:
+		case []interface{}:
 			collection := make([]absser.UntypedNodeable, len(value))
-			for index, node := range value {
-				parsable, err := node.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
-				if err != nil {
-					return nil, errors.New("cannot parse object value")
-				}
-				if parsable == nil {
+			for index, rawElem := range value {
+				var parsable absser.Parsable
+				if rawElem == nil {
 					parsable = absser.NewUntypedNull()
+				} else if jn, ok := rawElem.(*JsonParseNode); ok {
+					parsable, err = jn.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+					if err != nil {
+						return nil, errors.New("cannot parse object value")
+					}
+					if parsable == nil {
+						parsable = absser.NewUntypedNull()
+					}
+				} else {
+					parsable = rawToUntypedNodeable(rawElem)
 				}
-				property, ok := parsable.(absser.UntypedNodeable)
-				if ok {
+				if property, ok := parsable.(absser.UntypedNodeable); ok {
 					collection[index] = property
 				}
-
 			}
 			return absser.NewUntypedArray(collection), nil
 		default:
@@ -254,7 +319,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 	}
 
 	abstractions.InvokeParsableAction(n.GetOnBeforeAssignFieldValues(), result)
-	properties, ok := n.value.(map[string]*JsonParseNode)
+	properties, ok := n.value.(map[string]interface{})
 	fields := result.GetFieldDeserializers()
 	if ok && len(properties) != 0 {
 		itemAsHolder, isHolder := result.(absser.AdditionalDataHolder)
@@ -267,28 +332,42 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 			}
 		}
 
-		for key, value := range properties {
+		for key, rawValue := range properties {
 			field := fields[key]
-			if value != nil {
-				err := value.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
-				if err != nil {
-					return nil, err
-				}
-				err = value.SetOnAfterAssignFieldValues(n.GetOnAfterAssignFieldValues())
-				if err != nil {
-					return nil, err
-				}
-			}
 			if field == nil {
-				if value != nil && isHolder {
-					rawValue, err := value.GetRawValue()
+				if rawValue != nil && isHolder {
+					if jn, ok := rawValue.(*JsonParseNode); ok {
+						rv, err := jn.GetRawValue()
+						if err != nil {
+							return nil, err
+						}
+						itemAdditionalData[key] = rv
+					} else {
+						// Raw primitive stored directly – no need to create a JsonParseNode
+						itemAdditionalData[key] = rawValue
+					}
+				}
+			} else {
+				// Wrap raw values in a JsonParseNode on demand only for known fields
+				var childNode *JsonParseNode
+				if rawValue == nil {
+					childNode = nil
+				} else if jn, ok := rawValue.(*JsonParseNode); ok {
+					childNode = jn
+				} else {
+					childNode = &JsonParseNode{value: rawValue}
+				}
+				if childNode != nil {
+					err := childNode.SetOnBeforeAssignFieldValues(n.GetOnBeforeAssignFieldValues())
 					if err != nil {
 						return nil, err
 					}
-					itemAdditionalData[key] = rawValue
+					err = childNode.SetOnAfterAssignFieldValues(n.GetOnAfterAssignFieldValues())
+					if err != nil {
+						return nil, err
+					}
 				}
-			} else {
-				err := field(value)
+				err := field(childNode)
 				if err != nil {
 					return nil, err
 				}
@@ -307,21 +386,25 @@ func (n *JsonParseNode) GetCollectionOfObjectValues(ctor absser.ParsableFactory)
 	if ctor == nil {
 		return nil, errors.New("ctor is nil")
 	}
-	nodes, ok := n.value.([]*JsonParseNode)
+	nodes, ok := n.value.([]interface{})
 	if !ok {
 		return nil, errors.New("value is not a collection")
 	}
 	result := make([]absser.Parsable, len(nodes))
-	for i, v := range nodes {
-		if v != nil {
-			val, err := (*v).GetObjectValue(ctor)
-			if err != nil {
-				return nil, err
-			}
-			result[i] = val
-		} else {
+	for i, rawElem := range nodes {
+		if rawElem == nil {
 			result[i] = nil
+			continue
 		}
+		jn, ok := rawElem.(*JsonParseNode)
+		if !ok {
+			return nil, errors.New("collection element is not a parse node")
+		}
+		val, err := jn.GetObjectValue(ctor)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = val
 	}
 	return result, nil
 }
@@ -334,20 +417,31 @@ func (n *JsonParseNode) GetCollectionOfPrimitiveValues(targetType string) ([]int
 	if targetType == "" {
 		return nil, errors.New("targetType is empty")
 	}
-	nodes, ok := n.value.([]*JsonParseNode)
+	nodes, ok := n.value.([]interface{})
 	if !ok {
 		return nil, errors.New("value is not a collection")
 	}
 	result := make([]interface{}, len(nodes))
-	for i, v := range nodes {
-		if v != nil {
-			val, err := v.getPrimitiveValue(targetType)
+	for i, rawElem := range nodes {
+		if rawElem == nil {
+			result[i] = nil
+			continue
+		}
+		if jn, ok := rawElem.(*JsonParseNode); ok {
+			// Complex node (e.g. nested array/object used as a primitive collection element)
+			val, err := jn.getPrimitiveValue(targetType)
 			if err != nil {
 				return nil, err
 			}
 			result[i] = val
 		} else {
-			result[i] = nil
+			// Raw primitive value stored without a JsonParseNode wrapper – convert directly
+			// to avoid allocating an intermediate node.
+			val, err := rawToPrimitiveValue(rawElem, targetType)
+			if err != nil {
+				return nil, err
+			}
+			result[i] = val
 		}
 	}
 	return result, nil
@@ -391,6 +485,85 @@ func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error
 	}
 }
 
+// rawToPrimitiveValue converts a raw primitive value (stored without a JsonParseNode wrapper)
+// to the requested target type. This avoids allocating an intermediate JsonParseNode when
+// processing collections of primitive values.
+func rawToPrimitiveValue(rawValue interface{}, targetType string) (interface{}, error) {
+	switch targetType {
+	case "string":
+		var val string
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "bool":
+		var val bool
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "uint8":
+		// The "uint8" target type maps to int8 to align with GetInt8Value which returns *int8.
+		// This mirrors the behaviour of getPrimitiveValue / GetInt8Value.
+		var val int8
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "byte":
+		var val byte
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "float32":
+		var val float32
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "float64":
+		var val float64
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "int32":
+		var val int32
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "int64":
+		var val int64
+		if err := as(rawValue, &val); err != nil {
+			return nil, err
+		}
+		return &val, nil
+	case "time":
+		// For time/date types, the raw value should be a *string; delegate to a temporary node
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetTimeValue()
+	case "timeonly":
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetTimeOnlyValue()
+	case "dateonly":
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetDateOnlyValue()
+	case "isoduration":
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetISODurationValue()
+	case "uuid":
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetUUIDValue()
+	case "base64":
+		tmpNode := &JsonParseNode{value: rawValue}
+		return tmpNode.GetByteArrayValue()
+	default:
+		return nil, fmt.Errorf("targetType %s is not supported", targetType)
+	}
+}
+
 // GetCollectionOfEnumValues returns the collection of Enum values from the node.
 func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]interface{}, error) {
 	if isNil(n) || isNil(n.value) {
@@ -399,21 +572,37 @@ func (n *JsonParseNode) GetCollectionOfEnumValues(parser absser.EnumFactory) ([]
 	if parser == nil {
 		return nil, errors.New("parser is nil")
 	}
-	nodes, ok := n.value.([]*JsonParseNode)
+	nodes, ok := n.value.([]interface{})
 	if !ok {
 		return nil, errors.New("value is not a collection")
 	}
 	result := make([]interface{}, len(nodes))
-	for i, v := range nodes {
-		if v != nil {
-			val, err := v.GetEnumValue(parser)
+	for i, rawElem := range nodes {
+		if rawElem == nil {
+			result[i] = nil
+			continue
+		}
+		var strVal *string
+		if jn, ok := rawElem.(*JsonParseNode); ok {
+			var err error
+			strVal, err = jn.GetStringValue()
 			if err != nil {
 				return nil, err
 			}
-			result[i] = val
+		} else if sp, ok := rawElem.(*string); ok {
+			strVal = sp
 		} else {
-			result[i] = nil
+			return nil, fmt.Errorf("enum collection element has unexpected type %T", rawElem)
 		}
+		if strVal == nil {
+			result[i] = nil
+			continue
+		}
+		val, err := parser(*strVal)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = val
 	}
 	return result, nil
 }
@@ -651,24 +840,42 @@ func (n *JsonParseNode) GetRawValue() (interface{}, error) {
 	switch v := n.value.(type) {
 	case *JsonParseNode:
 		return v.GetRawValue()
-	case []*JsonParseNode:
+	case []interface{}:
 		result := make([]interface{}, len(v))
 		for i, x := range v {
-			val, err := x.GetRawValue()
-			if err != nil {
-				return nil, err
+			if x == nil {
+				result[i] = nil
+				continue
 			}
-			result[i] = val
+			if jn, ok := x.(*JsonParseNode); ok {
+				val, err := jn.GetRawValue()
+				if err != nil {
+					return nil, err
+				}
+				result[i] = val
+			} else {
+				// Raw primitive – return as-is
+				result[i] = x
+			}
 		}
 		return result, nil
-	case map[string]*JsonParseNode:
+	case map[string]interface{}:
 		m := make(map[string]interface{})
 		for key, element := range v {
-			elementVal, err := element.GetRawValue()
-			if err != nil {
-				return nil, err
+			if element == nil {
+				m[key] = nil
+				continue
 			}
-			m[key] = elementVal
+			if jn, ok := element.(*JsonParseNode); ok {
+				elementVal, err := jn.GetRawValue()
+				if err != nil {
+					return nil, err
+				}
+				m[key] = elementVal
+			} else {
+				// Raw primitive – return as-is
+				m[key] = element
+			}
 		}
 		return m, nil
 	default:
@@ -692,4 +899,30 @@ func (n *JsonParseNode) GetOnAfterAssignFieldValues() absser.ParsableAction {
 func (n *JsonParseNode) SetOnAfterAssignFieldValues(action absser.ParsableAction) error {
 	n.onAfterAssignFieldValues = action
 	return nil
+}
+
+// rawToUntypedNodeable converts a raw primitive value (stored without a JsonParseNode wrapper)
+// to an absser.UntypedNodeable. Used when constructing untyped node trees from optimised
+// (allocation-reduced) parse trees.
+func rawToUntypedNodeable(v interface{}) absser.UntypedNodeable {
+	switch rv := v.(type) {
+	case *bool:
+		return absser.NewUntypedBoolean(*rv)
+	case *string:
+		return absser.NewUntypedString(*rv)
+	case *float32:
+		return absser.NewUntypedFloat(*rv)
+	case *float64:
+		return absser.NewUntypedDouble(*rv)
+	case *int32:
+		return absser.NewUntypedInteger(*rv)
+	case *int64:
+		return absser.NewUntypedLong(*rv)
+	case *int8:
+		return absser.NewUntypedInteger(int32(*rv))
+	case *byte:
+		return absser.NewUntypedInteger(int32(*rv))
+	default:
+		return absser.NewUntypedNode(v)
+	}
 }
