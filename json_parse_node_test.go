@@ -836,3 +836,61 @@ const FunctionalTestSource = "{" +
 	"}" +
 	"]" +
 	"}"
+
+// BenchmarkCollectionOfPrimitiveValues measures the allocations and throughput when
+// parsing and deserializing a JSON array of integers.
+func BenchmarkCollectionOfPrimitiveValues(b *testing.B) {
+	source := []byte(`{"values":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]}`)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		node, err := NewJsonParseNode(source)
+		if err != nil {
+			b.Fatal(err)
+		}
+		child, err := node.GetChildNode("values")
+		if err != nil {
+			b.Fatal(err)
+		}
+		_, err = child.GetCollectionOfPrimitiveValues("int32")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkGetCollectionOfPrimitiveValues measures allocations when calling
+// GetCollectionOfPrimitiveValues on an already-parsed node, isolating access cost.
+func BenchmarkGetCollectionOfPrimitiveValues(b *testing.B) {
+	source := []byte(`{"values":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]}`)
+	node, err := NewJsonParseNode(source)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		child, err := node.GetChildNode("values")
+		if err != nil {
+			b.Fatal(err)
+		}
+		_, err = child.GetCollectionOfPrimitiveValues("int32")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkObjectDeserialization measures allocation overhead when deserializing
+// a JSON object whose properties are all primitive values.
+func BenchmarkObjectDeserialization(b *testing.B) {
+	source := []byte(`{"id":"1","name":"John","age":30,"active":true,"score":99.5}`)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := NewJsonParseNode(source)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
