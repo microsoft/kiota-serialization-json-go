@@ -891,7 +891,11 @@ func BenchmarkObjectDeserialization(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := NewJsonParseNode(source)
+		node, err := NewJsonParseNode(source)
+		if err != nil {
+			b.Fatal(err)
+		}
+		_, err = node.GetObjectValue(internal.CreateTestEntityFromDiscriminator)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -1149,6 +1153,24 @@ func TestLoadJsonTreeFromToken_NestedArray(t *testing.T) {
 	inner0Arr, ok := inner0.value.([]interface{})
 	require.True(t, ok)
 	assert.Equal(t, float64(1), *inner0Arr[0].(*float64))
+}
+
+func TestLoadJsonTreeFromToken_UnsupportedClosingDelimiters_ReturnsError(t *testing.T) {
+	for _, delim := range []json.Delim{'}', ']'} {
+		t.Run(fmt.Sprintf("delim_%c", delim), func(t *testing.T) {
+			decoder := json.NewDecoder(bytes.NewReader(nil))
+			_, err := loadJsonTreeFromToken(decoder, delim)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unexpected delimiter token")
+		})
+	}
+}
+
+func TestLoadJsonTreeFromToken_UnknownType_ReturnsError(t *testing.T) {
+	decoder := json.NewDecoder(bytes.NewReader(nil))
+	_, err := loadJsonTreeFromToken(decoder, struct{}{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown token type")
 }
 
 // ---- GetObjectValue untyped nodes section tests ----

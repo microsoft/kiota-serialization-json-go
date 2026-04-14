@@ -144,6 +144,8 @@ func loadJsonTreeFromToken(decoder *json.Decoder, token json.Token) (*JsonParseN
 			}
 			decoder.Token() // skip the closing bracket
 			return &JsonParseNode{value: v}, nil
+		default:
+			return nil, fmt.Errorf("unexpected delimiter token: %v", t)
 		}
 	case json.Number:
 		i, err := t.Int64()
@@ -181,8 +183,9 @@ func loadJsonTreeFromToken(decoder *json.Decoder, token json.Token) (*JsonParseN
 		return &JsonParseNode{value: &v}, nil
 	case nil:
 		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown token type during tree loading: %T", token)
 	}
-	return nil, nil
 }
 
 // SetValue is obsolete, parse nodes are not meant to be settable externally
