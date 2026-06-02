@@ -281,7 +281,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				} else if jn, ok := rawVal.(*JsonParseNode); ok {
 					parsable, err = jn.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
 					if err != nil {
-						return nil, errors.New("cannot parse object value")
+						return nil, fmt.Errorf("cannot parse object value: %w", err)
 					}
 					if parsable == nil {
 						parsable = absser.NewUntypedNull()
@@ -303,7 +303,7 @@ func (n *JsonParseNode) GetObjectValue(ctor absser.ParsableFactory) (absser.Pars
 				} else if jn, ok := rawElem.(*JsonParseNode); ok {
 					parsable, err = jn.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
 					if err != nil {
-						return nil, errors.New("cannot parse object value")
+						return nil, fmt.Errorf("cannot parse object value: %w", err)
 					}
 					if parsable == nil {
 						parsable = absser.NewUntypedNull()
