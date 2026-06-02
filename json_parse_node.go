@@ -50,7 +50,7 @@ func tokenToValue(decoder *json.Decoder, token json.Token) (interface{}, error) 
 		if err == nil {
 			return &f, nil
 		}
-		return nil, errors.New("failed to parse number token")
+		return nil, fmt.Errorf("failed to parse number %q: %w", t, err)
 	case int8:
 		v := t
 		return &v, nil
