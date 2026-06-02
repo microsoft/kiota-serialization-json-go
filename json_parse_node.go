@@ -156,7 +156,7 @@ func loadJsonTreeFromToken(decoder *json.Decoder, token json.Token) (*JsonParseN
 		if err == nil {
 			return &JsonParseNode{value: &f}, nil
 		}
-		return nil, errors.New("failed to parse number")
+		return nil, fmt.Errorf("failed to parse number %q: %w", t, err)
 	case string:
 		s := t
 		return &JsonParseNode{value: &s}, nil
