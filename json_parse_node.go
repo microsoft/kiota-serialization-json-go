@@ -499,7 +499,7 @@ func (n *JsonParseNode) getPrimitiveValue(targetType string) (interface{}, error
 // processing collections of primitive values.
 func rawToPrimitiveValue(rawValue interface{}, targetType string) (interface{}, error) {
 	switch targetType {
-case "string":
+	case "string":
 		if sp, ok := rawValue.(*string); ok {
 			return sp, nil
 		}
