@@ -127,7 +127,13 @@ func loadJsonTreeFromToken(decoder *json.Decoder, token json.Token) (*JsonParseN
 				}
 				v[keyStr] = childValue
 			}
-			decoder.Token() // skip the closing curly
+			endTok, err := decoder.Token() // consume the closing curly
+			if err != nil {
+				return nil, err
+			}
+			if d, ok := endTok.(json.Delim); !ok || d != '}' {
+				return nil, fmt.Errorf("expected closing '}', got %v", endTok)
+			}
 			return &JsonParseNode{value: v}, nil
 		case '[':
 			v := make([]interface{}, 0)
