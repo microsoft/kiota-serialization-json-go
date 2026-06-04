@@ -1151,6 +1151,44 @@ func TestLoadJsonTreeFromToken_UnknownType_ReturnsError(t *testing.T) {
 	assert.Contains(t, err.Error(), "unknown token type")
 }
 
+func TestLoadJsonTreeFromToken_TruncatedArray_ReturnsError(t *testing.T) {
+	// Truncated JSON is missing the closing ']'; the decoder returns EOF when
+	// loadJsonTreeFromToken tries to consume the closing bracket.
+	decoder := json.NewDecoder(bytes.NewReader([]byte(`[1,2`)))
+	openTok, err := decoder.Token()
+	require.NoError(t, err)
+	_, err = loadJsonTreeFromToken(decoder, openTok)
+	require.Error(t, err)
+}
+
+func TestLoadJsonTreeFromToken_EmptyTruncatedArray_ReturnsError(t *testing.T) {
+	// Empty truncated array '[' with no closing ']' should return an error.
+	decoder := json.NewDecoder(bytes.NewReader([]byte(`[`)))
+	openTok, err := decoder.Token()
+	require.NoError(t, err)
+	_, err = loadJsonTreeFromToken(decoder, openTok)
+	require.Error(t, err)
+}
+
+func TestLoadJsonTreeFromToken_TruncatedObject_ReturnsError(t *testing.T) {
+	// Truncated JSON is missing the closing '}'; the decoder returns EOF when
+	// loadJsonTreeFromToken tries to consume the closing brace.
+	decoder := json.NewDecoder(bytes.NewReader([]byte(`{"key":1`)))
+	openTok, err := decoder.Token()
+	require.NoError(t, err)
+	_, err = loadJsonTreeFromToken(decoder, openTok)
+	require.Error(t, err)
+}
+
+func TestLoadJsonTreeFromToken_EmptyTruncatedObject_ReturnsError(t *testing.T) {
+	// Empty truncated object '{' with no closing '}' should return an error.
+	decoder := json.NewDecoder(bytes.NewReader([]byte(`{`)))
+	openTok, err := decoder.Token()
+	require.NoError(t, err)
+	_, err = loadJsonTreeFromToken(decoder, openTok)
+	require.Error(t, err)
+}
+
 // ---- GetObjectValue untyped nodes section tests ----
 
 func TestGetObjectValue_UntypedBoolean(t *testing.T) {
