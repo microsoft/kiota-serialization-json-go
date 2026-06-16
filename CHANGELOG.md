@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.2...v1.1.3) (2026-06-16)
+
+
+### Bug Fixes
+
+* add default error cases to loadJsonTreeFromToken and fix BenchmarkObjectDeserialization ([e710afd](https://github.com/microsoft/kiota-serialization-json-go/commit/e710afdb38053408a48bc187831c4ce7dc7c9ac8))
+* adds offending value to error message ([397c688](https://github.com/microsoft/kiota-serialization-json-go/commit/397c688c7e0b22239cfdbad9c8551e29005e34e2))
+* consume the closing bracket to avoid invalid json ([fce18aa](https://github.com/microsoft/kiota-serialization-json-go/commit/fce18aa315011eee03586274415147a92820d941))
+* improve json.Number parse error details in tokenToValue ([9ba66ee](https://github.com/microsoft/kiota-serialization-json-go/commit/9ba66ee86ce12cd572dc6ad8deb784efd13404da))
+* preserve nested parse errors in untyped object parsing ([dc6d8c5](https://github.com/microsoft/kiota-serialization-json-go/commit/dc6d8c50d63f387437199814157f477ec501866d))
+* validate the closing curly instead of discarding it ([f92f6c1](https://github.com/microsoft/kiota-serialization-json-go/commit/f92f6c1fff128dddc8c67b4f3a4159891165eb9d))
+
+
+### Performance Improvements
+
+* reduce parse node allocations when deserializing primitive types ([0754e54](https://github.com/microsoft/kiota-serialization-json-go/commit/0754e54fc19955ab39b91fae6f36f13350ae3c4b))
+* reduce parse node allocations when deserializing primitive types ([f6e946b](https://github.com/microsoft/kiota-serialization-json-go/commit/f6e946ba8926848687c22031ca4ba47ae15fd139))
+
 ## [1.1.2](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.1...v1.1.2) (2025-04-02)
 
 
