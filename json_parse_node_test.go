@@ -435,8 +435,8 @@ func TestJsonGetInt8Value(t *testing.T) {
 		{
 			Title:    "String",
 			Input:    []byte(`"1"`),
-			Expected: (*int8)(nil),
-			Error:    errors.New("value '1' is not compatible with type int8"),
+			Expected: int8(1),
+			Error:    nil,
 		},
 		{
 			Title:    "Float",
@@ -445,8 +445,32 @@ func TestJsonGetInt8Value(t *testing.T) {
 			Error:    errors.New("value '1.1' is not compatible with type int8"),
 		},
 		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value 'abc' is not compatible with type int8"),
+		},
+		{
+			Title:    "Decimal String",
+			Input:    []byte(`"1.5"`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '1.5' is not compatible with type int8"),
+		},
+		{
+			Title:    "Empty String",
+			Input:    []byte(`""`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '' is not compatible with type int8"),
+		},
+		{
 			Title:    "Too Big",
 			Input:    []byte(`129`),
+			Expected: (*int8)(nil),
+			Error:    errors.New("value '129' is not compatible with type int8"),
+		},
+		{
+			Title:    "Too Big String",
+			Input:    []byte(`"129"`),
 			Expected: (*int8)(nil),
 			Error:    errors.New("value '129' is not compatible with type int8"),
 		},
@@ -499,14 +523,26 @@ func TestJsonGetByteValue(t *testing.T) {
 		{
 			Title:    "String",
 			Input:    []byte(`"1"`),
+			Expected: uint8(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
 			Expected: (*uint8)(nil),
-			Error:    errors.New("value '1' is not compatible with type uint8"),
+			Error:    errors.New("value 'abc' is not compatible with type uint8"),
 		},
 		{
 			Title:    "Too Big",
 			Input:    []byte(`3.40283e+38`),
 			Expected: (*uint8)(nil),
 			Error:    errors.New("value '3.40283e+38' is not compatible with type uint8"),
+		},
+		{
+			Title:    "Too Big String",
+			Input:    []byte(`"256"`),
+			Expected: (*uint8)(nil),
+			Error:    errors.New("value '256' is not compatible with type uint8"),
 		},
 	}
 
@@ -551,8 +587,20 @@ func TestJsonGetFloat32Value(t *testing.T) {
 		{
 			Title:    "String",
 			Input:    []byte(`"1"`),
+			Expected: float32(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Decimal String",
+			Input:    []byte(`"1.5"`),
+			Expected: float32(1.5),
+			Error:    nil,
+		},
+		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
 			Expected: (*float32)(nil),
-			Error:    errors.New("value '1' is not compatible with type float32"),
+			Error:    errors.New("value 'abc' is not compatible with type float32"),
 		},
 		{
 			Title:    "Too Big",
@@ -603,8 +651,20 @@ func TestJsonGetFloat64Value(t *testing.T) {
 		{
 			Title:    "String",
 			Input:    []byte(`"1"`),
+			Expected: float64(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Decimal String",
+			Input:    []byte(`"1.5"`),
+			Expected: float64(1.5),
+			Error:    nil,
+		},
+		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
 			Expected: (*float64)(nil),
-			Error:    errors.New("value '1' is not compatible with type float64"),
+			Error:    errors.New("value 'abc' is not compatible with type float64"),
 		},
 		//NOTE: no point in checking too big, the STD JSON encoder will error out first :)
 	}
@@ -656,8 +716,32 @@ func TestJsonGetInt32Value(t *testing.T) {
 		{
 			Title:    "String",
 			Input:    []byte(`"1"`),
+			Expected: int32(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
 			Expected: (*int32)(nil),
-			Error:    errors.New("value '1' is not compatible with type int32"),
+			Error:    errors.New("value 'abc' is not compatible with type int32"),
+		},
+		{
+			Title:    "Decimal String",
+			Input:    []byte(`"1.5"`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '1.5' is not compatible with type int32"),
+		},
+		{
+			Title:    "Empty String",
+			Input:    []byte(`""`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '' is not compatible with type int32"),
+		},
+		{
+			Title:    "Overflow String",
+			Input:    []byte(`"3000000000"`),
+			Expected: (*int32)(nil),
+			Error:    errors.New("value '3000000000' is not compatible with type int32"),
 		},
 		{
 			Title:    "Too Big",
@@ -712,6 +796,30 @@ func TestJsonGetInt64Value(t *testing.T) {
 			Error:    errors.New("value '1.1' is not compatible with type int64"),
 		},
 		{
+			Title:    "String",
+			Input:    []byte(`"1"`),
+			Expected: int64(1),
+			Error:    nil,
+		},
+		{
+			Title:    "Invalid String",
+			Input:    []byte(`"abc"`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value 'abc' is not compatible with type int64"),
+		},
+		{
+			Title:    "Decimal String",
+			Input:    []byte(`"1.5"`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value '1.5' is not compatible with type int64"),
+		},
+		{
+			Title:    "Empty String",
+			Input:    []byte(`""`),
+			Expected: (*int64)(nil),
+			Error:    errors.New("value '' is not compatible with type int64"),
+		},
+		{
 			Title:    "Too Big",
 			Input:    []byte(`3.40283e+38`),
 			Expected: (*int64)(nil),
@@ -736,6 +844,23 @@ func TestJsonGetInt64Value(t *testing.T) {
 			assert.Equal(t, test.Expected, val)
 		})
 	}
+}
+
+// TestJsonGetCollectionOfStringEncodedNumbers ensures the collection path (rawToPrimitiveValue)
+// also accepts numbers encoded as JSON strings, e.g. ["1","2","3"] into []int32.
+func TestJsonGetCollectionOfStringEncodedNumbers(t *testing.T) {
+	parseNode, err := NewJsonParseNode([]byte(`{"phones":["1","2","3"]}`))
+	assert.Nil(t, err)
+
+	prop, err := parseNode.GetChildNode("phones")
+	assert.Nil(t, err)
+
+	values, err := prop.GetCollectionOfPrimitiveValues("int32")
+	assert.Nil(t, err)
+	assert.Len(t, values, 3)
+	assert.Equal(t, int32(1), *(values[0].(*int32)))
+	assert.Equal(t, int32(2), *(values[1].(*int32)))
+	assert.Equal(t, int32(3), *(values[2].(*int32)))
 }
 
 const TestUntypedJson = "{\r\n" +

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 type numericRange struct {
@@ -89,6 +91,22 @@ func as[T any](in interface{}, out T) error {
 	}
 
 	outType := nestedOutVal.Type()
+
+	// Numbers encoded as JSON strings (e.g. "1") arrive here as a plain string after the
+	// pointer dereference above. Parse the string into a numeric value and run it through the
+	// same range/decimal compatibility checks used for native numbers, so callers get a value
+	// for valid strings ("1" -> int32(1), "1.5" -> float64(1.5)) and a clear error otherwise.
+	if s, ok := in.(string); ok && isNumericType(outType) {
+		parsed, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+		if err != nil {
+			return fmt.Errorf("value '%v' is not compatible with type %T", in, nestedOutVal.Interface())
+		}
+		if !isCompatibleInt(parsed, outType) {
+			return fmt.Errorf("value '%v' is not compatible with type %T", in, nestedOutVal.Interface())
+		}
+		outVal.Elem().Set(reflect.ValueOf(parsed).Convert(outType))
+		return nil
+	}
 
 	if !isCompatible(in, outType) {
 		return fmt.Errorf("value '%v' is not compatible with type %T", in, nestedOutVal.Interface())
