@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.3...v1.1.4) (2026-06-26)
+
+
+### Bug Fixes
+
+* parse numbers encoded as JSON strings in numeric getters ([0ddeef7](https://github.com/microsoft/kiota-serialization-json-go/commit/0ddeef77146325840fd76b4fa825df3ce79c2140))
+* parse numbers encoded as JSON strings in numeric getters ([3701719](https://github.com/microsoft/kiota-serialization-json-go/commit/3701719a47862f4f624d440f60b0ff4aa56905bd)), closes [#174](https://github.com/microsoft/kiota-serialization-json-go/issues/174)
+
 ## [1.1.3](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.2...v1.1.3) (2026-06-16)
 
 
