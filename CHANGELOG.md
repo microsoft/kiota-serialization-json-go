@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.4...v1.1.5) (2026-10-16)
+
+
+### Bug Fixes
+
+* preserve source strings when parsing timestamps ([c0223bd](https://github.com/microsoft/kiota-serialization-json-go/commit/c0223bd9d2f6f9f2cc1aa4c56666c29608506916))
+* preserve source strings when parsing timestamps ([b666c8b](https://github.com/microsoft/kiota-serialization-json-go/commit/b666c8be53aee6c8b5f9fc616df8aa33edda416a))
+
 ## [1.1.4](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.3...v1.1.4) (2026-06-26)
 
 
