@@ -751,11 +751,12 @@ func (n *JsonParseNode) GetTimeValue() (*time.Time, error) {
 		return nil, nil
 	}
 
+	value := *v
 	// if string does not have timezone information, add local timezone
-	if len(*v) == 19 {
-		*v = *v + time.Now().Format("-07:00")
+	if len(value) == 19 {
+		value += time.Now().Format("-07:00")
 	}
-	parsed, err := time.Parse(time.RFC3339, *v)
+	parsed, err := time.Parse(time.RFC3339, value)
 	return &parsed, err
 }
 

@@ -248,6 +248,61 @@ func TestParsingTime(t *testing.T) {
 	assert.Equal(t, "2023-07-12 09:54:24", time2.Format("2006-01-02 15:04:05"))
 }
 
+func TestGetTimeValuePreservesString(t *testing.T) {
+	tests := []struct {
+		name    string
+		value   string
+		wantErr bool
+	}{
+		{"without timezone", "2023-07-12T08:54:24", false},
+		{"UTC", "2023-07-12T08:54:24Z", false},
+		{"offset", "2023-07-12T08:54:24+03:00", false},
+		{"invalid date", "2023-99-12T08:54:24", true},
+	}
+	for _, tt := range tests {
+		for _, location := range []string{"root", "property"} {
+			t.Run(tt.name+"/"+location, func(t *testing.T) {
+				source := `"` + tt.value + `"`
+				if location == "property" {
+					source = `{"date":` + source + `}`
+				}
+				node, err := NewJsonParseNodeFactory().GetRootParseNode("application/json", []byte(source))
+				require.NoError(t, err)
+				if location == "property" {
+					node, err = node.GetChildNode("date")
+					require.NoError(t, err)
+				}
+				parsed, err := node.GetTimeValue()
+				if tt.wantErr {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+					require.NotNil(t, parsed)
+				}
+				value, err := node.GetStringValue()
+				require.NoError(t, err)
+				require.NotNil(t, value)
+				assert.Equal(t, tt.value, *value)
+			})
+		}
+	}
+}
+
+func TestGetCollectionOfTimeValuesPreservesStrings(t *testing.T) {
+	node, err := NewJsonParseNodeFactory().GetRootParseNode("application/json", []byte(`["2023-07-12T08:54:24",null,"2023-07-12T08:54:24Z"]`))
+	require.NoError(t, err)
+	values, err := node.GetCollectionOfPrimitiveValues("time")
+	require.NoError(t, err)
+	require.Len(t, values, 3)
+	assert.Nil(t, values[1])
+
+	strings, err := node.GetCollectionOfPrimitiveValues("string")
+	require.NoError(t, err)
+	noZone := "2023-07-12T08:54:24"
+	withZone := "2023-07-12T08:54:24Z"
+	assert.Equal(t, []interface{}{&noZone, nil, &withZone}, strings)
+}
+
 func TestThrowErrorOfPrimitiveType(t *testing.T) {
 	source := `{
 				"id": "2",
