@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
+	_ "time/tzdata"
 
 	"github.com/microsoft/kiota-serialization-json-go/internal"
 	"github.com/stretchr/testify/require"
@@ -246,6 +248,38 @@ func TestParsingTime(t *testing.T) {
 	time2, err := someProp2.GetTimeValue()
 	assert.Nil(t, err)
 	assert.Equal(t, "2023-07-12 09:54:24", time2.Format("2006-01-02 15:04:05"))
+}
+
+func TestGetTimeValueWithoutZoneUsesLocalOffsetOfThatDate(t *testing.T) {
+	berlin, err := time.LoadLocation("Europe/Berlin")
+	require.NoError(t, err)
+	previousLocal := time.Local
+	time.Local = berlin
+	t.Cleanup(func() { time.Local = previousLocal })
+
+	tests := []struct {
+		value string
+		want  string
+	}{
+		{"2023-01-12T08:54:24", "2023-01-12T08:54:24+01:00"},
+		{"2023-07-12T08:54:24", "2023-07-12T08:54:24+02:00"},
+		{"2023-01-12T08:54:24.123", "2023-01-12T08:54:24.123+01:00"},
+		{"2023-07-12T08:54:24.1234567", "2023-07-12T08:54:24.1234567+02:00"},
+		{"2023-07-12T08:54:24.123Z", "2023-07-12T08:54:24.123Z"},
+		{"2023-07-12T08:54:24.123+03:00", "2023-07-12T08:54:24.123+03:00"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.value, func(t *testing.T) {
+			node, err := NewJsonParseNode([]byte(`"` + tt.value + `"`))
+			require.NoError(t, err)
+			parsed, err := node.GetTimeValue()
+			require.NoError(t, err)
+			require.NotNil(t, parsed)
+			want, err := time.Parse(time.RFC3339Nano, tt.want)
+			require.NoError(t, err)
+			assert.True(t, want.Equal(*parsed), "got %s, want %s", parsed.Format(time.RFC3339Nano), tt.want)
+		})
+	}
 }
 
 func TestGetTimeValuePreservesString(t *testing.T) {

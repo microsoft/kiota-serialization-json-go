@@ -751,14 +751,20 @@ func (n *JsonParseNode) GetTimeValue() (*time.Time, error) {
 		return nil, nil
 	}
 
-	value := *v
-	// if string does not have timezone information, add local timezone
-	if len(value) == 19 {
-		value += time.Now().Format("-07:00")
+	parsed, err := time.Parse(time.RFC3339, *v)
+	if err != nil {
+		// if the string has no timezone information, read it as local time, using the
+		// offset that applies on that date
+		if local, localErr := time.ParseInLocation(dateTimeWithoutZoneLayout, *v, time.Local); localErr == nil {
+			return &local, nil
+		}
+		return &parsed, err
 	}
-	parsed, err := time.Parse(time.RFC3339, value)
-	return &parsed, err
+	return &parsed, nil
 }
+
+// dateTimeWithoutZoneLayout matches RFC 3339 date-times without a timezone, with or without fractional seconds.
+const dateTimeWithoutZoneLayout = "2006-01-02T15:04:05.999999999"
 
 // GetISODurationValue returns a ISODuration value from the nodes.
 func (n *JsonParseNode) GetISODurationValue() (*absser.ISODuration, error) {
