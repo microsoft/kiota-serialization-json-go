@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.6](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.5...v1.1.6) (2026-11-26)
+
+
+### Bug Fixes
+
+* escape JSON property names ([d427757](https://github.com/microsoft/kiota-serialization-json-go/commit/d427757d0e90f257889f55d6458562a8aec75df2))
+* escape JSON property names ([7ea13b8](https://github.com/microsoft/kiota-serialization-json-go/commit/7ea13b8a95ba5a84e2a5ebcadc1f8ec1fec0d809)), closes [#244](https://github.com/microsoft/kiota-serialization-json-go/issues/244)
+* read zone-less date-times with the offset of that date ([efc1767](https://github.com/microsoft/kiota-serialization-json-go/commit/efc1767711c086951ac8ac636e2b9dab752cb023))
+* read zone-less date-times with the offset of that date ([4ce943d](https://github.com/microsoft/kiota-serialization-json-go/commit/4ce943d60a4623d87b6197adafa7f78297d8246f))
+
 ## [1.1.5](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.4...v1.1.5) (2026-10-16)
 
 
