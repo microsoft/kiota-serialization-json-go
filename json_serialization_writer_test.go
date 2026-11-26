@@ -47,6 +47,27 @@ func TestItDoesntTrimCommasOnEmptyAdditionalData(t *testing.T) {
 	assert.Equal(t, "\"key\":\"value\",\"key2\":\"value2\"", string(result[:]))
 }
 
+func TestItEscapesPropertyNames(t *testing.T) {
+	serializer := NewJsonSerializationWriter()
+	err := serializer.WriteAdditionalData(map[string]interface{}{"say \"hi\"\n": "x", `C:\dir`: "y"})
+	require.NoError(t, err)
+	result, err := serializer.GetSerializedContent()
+	require.NoError(t, err)
+	assert.JSONEq(t, `{"say \"hi\"\n":"x","C:\\dir":"y"}`, "{"+string(result)+"}")
+
+	// A key parsed from valid JSON must serialize back to valid JSON.
+	source := `{"say \"hi\"":"x"}`
+	parseNode, err := NewJsonParseNode([]byte(source))
+	require.NoError(t, err)
+	value, err := parseNode.GetObjectValue(absser.CreateUntypedNodeFromDiscriminatorValue)
+	require.NoError(t, err)
+	serializer = NewJsonSerializationWriter()
+	require.NoError(t, serializer.WriteObjectValue("", value))
+	result, err = serializer.GetSerializedContent()
+	require.NoError(t, err)
+	assert.JSONEq(t, source, string(result))
+}
+
 func TestWriteTimeValue(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := referenceTime()
