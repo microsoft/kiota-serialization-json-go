@@ -80,6 +80,13 @@ func (w *JsonSerializationWriter) writeStringValue(value string) {
 	w.writeRawValue(s[:len(s)-1])
 }
 func (w *JsonSerializationWriter) writePropertyName(key string) {
+	// Keys from generated models are plain identifiers, but additional data and
+	// untyped object keys can be arbitrary strings, so escape them when needed.
+	if strings.IndexFunc(key, func(r rune) bool { return r < 0x20 || r == '"' || r == '\\' }) >= 0 {
+		w.writeStringValue(key)
+		w.writeRawValue(":")
+		return
+	}
 	w.writeRawValue("\"", key, "\":")
 }
 func (w *JsonSerializationWriter) writePropertySeparator() {
