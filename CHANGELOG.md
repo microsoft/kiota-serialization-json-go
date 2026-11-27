@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.7](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.6...v1.1.7) (2026-11-27)
+
+
+### Bug Fixes
+
+* preserve fractional seconds when serializing date-times ([f466ca6](https://github.com/microsoft/kiota-serialization-json-go/commit/f466ca6d438a3c5d44992e55120f24772e172704))
+* preserve fractional seconds when serializing date-times ([5481420](https://github.com/microsoft/kiota-serialization-json-go/commit/54814200933304c3ca9c580965d8c0edfb9e68f3))
+
 ## [1.1.6](https://github.com/microsoft/kiota-serialization-json-go/compare/v1.1.5...v1.1.6) (2026-11-26)
 
 
