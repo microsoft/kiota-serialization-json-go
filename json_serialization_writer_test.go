@@ -77,6 +77,55 @@ func TestWriteTimeValue(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("\"key\":%q", value.Format(time.RFC3339)), string(result[:]))
 }
 
+func TestWriteTimeValuePreservesFractionalSeconds(t *testing.T) {
+	cases := []struct {
+		name     string
+		value    time.Time
+		expected string
+	}{
+		{"milliseconds", time.Date(2026, 11, 27, 10, 30, 15, 123_000_000, time.UTC), "2026-11-27T10:30:15.123Z"},
+		{"ticks", time.Date(2026, 11, 27, 10, 30, 15, 123_456_700, time.UTC), "2026-11-27T10:30:15.1234567Z"},
+		{"nanoseconds with offset", time.Date(2026, 11, 27, 10, 30, 15, 1, time.FixedZone("", -7*60*60)), "2026-11-27T10:30:15.000000001-07:00"},
+		{"whole seconds", time.Date(2026, 11, 27, 10, 30, 15, 0, time.UTC), "2026-11-27T10:30:15Z"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			serializer := NewJsonSerializationWriter()
+			require.NoError(t, serializer.WriteTimeValue("key", &tc.value))
+			result, err := serializer.GetSerializedContent()
+			require.NoError(t, err)
+			assert.Equal(t, fmt.Sprintf("\"key\":%q", tc.expected), string(result))
+		})
+	}
+}
+
+func TestTimeValueRoundTripPreservesFractionalSeconds(t *testing.T) {
+	source := `{"value":"2026-11-27T10:30:15.1234567Z","values":["2026-11-27T10:30:15.5+02:00"]}`
+	parseNode, err := NewJsonParseNode([]byte(source))
+	require.NoError(t, err)
+	valueNode, err := parseNode.GetChildNode("value")
+	require.NoError(t, err)
+	value, err := valueNode.GetTimeValue()
+	require.NoError(t, err)
+	valuesNode, err := parseNode.GetChildNode("values")
+	require.NoError(t, err)
+	rawValues, err := valuesNode.GetCollectionOfPrimitiveValues("time")
+	require.NoError(t, err)
+	values := make([]time.Time, len(rawValues))
+	for i, v := range rawValues {
+		values[i] = *(v.(*time.Time))
+	}
+
+	serializer := NewJsonSerializationWriter()
+	serializer.writeObjectStart()
+	require.NoError(t, serializer.WriteTimeValue("value", value))
+	require.NoError(t, serializer.WriteCollectionOfTimeValues("values", values))
+	serializer.writeObjectEnd()
+	result, err := serializer.GetSerializedContent()
+	require.NoError(t, err)
+	assert.JSONEq(t, source, string(result))
+}
+
 func TestWriteISODurationValue(t *testing.T) {
 	serializer := NewJsonSerializationWriter()
 	value := absser.NewDuration(1, 0, 2, 3, 4, 5, 6)

@@ -204,7 +204,7 @@ func (w *JsonSerializationWriter) WriteTimeValue(key string, value *time.Time) e
 		w.writePropertyName(key)
 	}
 	if value != nil {
-		w.writeStringValue((*value).Format(time.RFC3339))
+		w.writeStringValue((*value).Format(time.RFC3339Nano))
 	}
 	if key != "" && value != nil {
 		w.writePropertySeparator()
